@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/async": "^3.2.3",
+    "@types/jsonwebtoken": "^8.5.0",
     "@types/restify": "^8.4.2",
     "@types/restify-errors": "^4.3.3",
     "@types/revalidator": "^0.3.7",
@@ -14,6 +15,7 @@
     "bcryptjs": "^2.4.3",
     "cassandra-driver": "^4.5.2",
     "chalk": "^4.1.0",
+    "jsonwebtoken": "^8.5.1",
     "restify": "^8.5.1",
     "restify-errors": "^8.0.2",
     "revalidator": "^0.3.1"

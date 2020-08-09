@@ -9,8 +9,10 @@ import { Logger, LoggerLevel } from '../../../../logger';
 import async, { reject } from 'async';
 import { Mailbox, MailboxFlags } from '../../../../models/mailbox/mailbox.model';
 import { AES256 } from '../../../../helpers/aes.helper';
+import { Bearer } from '../../../../helpers/bearer.helper';
 
 const config: any = readConfig();
+const usernameRegex = '^[A-Za-z0-9._]{1,80}$';
 
 export namespace Controllers
 {
@@ -96,28 +98,32 @@ export namespace Controllers
       properties: {
         username: {
           type: 'string',
-          pattern: '^[A-Za-z0-9._]{1,80}$',
-          required: true
+          pattern: usernameRegex,
+          required: true,
+          maxLength: 196
         },
         password: {
           type: 'string',
           required: true,
-          minLength: 12
+          minLength: 12,
+          maxLength: 196
         },
         full_name: {
           type: 'string',
           required: true,
           minLength: 4,
-          maxLength: 120
+          maxLength: 196,
         },
         birth_date: {
           type: 'string',
-          required: true
+          required: true,
+          maxLength: 196
         },
         recovery_email: {
           type: 'string',
           required: false,
-          format: 'email'
+          format: 'email',
+          maxLength: 196
         }
       }
     })) return;
@@ -128,9 +134,10 @@ export namespace Controllers
     AccountShortcut.find(config.global.domain, req.body.username).then(accountShortcut => {
       // Checks if the account exists, else send error message
       if (accountShortcut)
-      {
-        return next(new errors.RestError(`Username already in use: ${req.body.username}`));
-      }
+        return res.json({
+          status: false,
+          message: `Account ${req.body.username}@${req.body.domain} already exists !`
+        });
 
       // Since it does not exist, create the new one and hash the 
       //  password, so it can be later used
@@ -214,5 +221,60 @@ export namespace Controllers
     req: restify.Request, res: restify.Response, 
     next: restify.Next
   ) => {
+    // Validates the request body, so we are sure that the needed parameters are there
+    //  the username and password in this case
+    if (!validateRequest(req, res, next, {
+      properties: {
+        username: {
+          required: true,
+          type: 'string',
+          pattern: usernameRegex,
+          maxLength: 196
+        },
+        password: {
+          required: true,
+          type: 'string',
+          maxLength: 196
+        },
+        domain: {
+          required: false,
+          type: 'string',
+          maxLength: 196
+        }
+      }
+    })) return;
+
+    // Sets the default domain if the domain is empty, then we check if the account
+    //  is in the database, if not we send an error
+    if (!req.body.domain) req.body.domain = config.global.domain;
+    AccountShortcut.find(req.body.domain, req.body.username).then(accountShortcut => {
+      // Checks if the account exists, if not send error
+      if (!accountShortcut)
+        return res.json({
+          status: false,
+          message: `Account ${req.body.username}@${req.body.domain} does not exist !`
+        });
+
+      // Gets the password from the account, so we can compare it against
+      //  the supplied one
+      Account.getPassword(accountShortcut.a_Bucket, accountShortcut.a_Domain, accountShortcut.a_UUID)
+      .then(password => {
+        passwordVerify(req.body.password, password).then(valid => {
+          if (!valid)
+            return next(new errors.InvalidArgumentError('Supplied password is not valid !'));
+          
+          // Generates the bearer, and sends the bearer to the client
+          const bearer = Bearer.generate(accountShortcut.a_UUID, accountShortcut.a_Domain, 
+            accountShortcut.a_Bucket, req.body.password);
+          res.json({
+            status: true,
+            bearer
+          });
+          // -> End passwordVerify()
+        }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+        // -> End Account.getPassword()
+      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+      // -> End AccountShortcut.find()
+    }).catch(err => next(new errors.InternalServerError({}, err.toString())));
   }
 };

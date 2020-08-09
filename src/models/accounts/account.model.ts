@@ -1,6 +1,8 @@
 import cassandraDriver from 'cassandra-driver';
 import { Cassandra } from '../../helpers/database.helper';
 import crypto from 'crypto';
+import { reject } from 'async';
+import { bunyan } from 'restify';
 
 enum AccountType {
   Default
@@ -67,9 +69,28 @@ class Account
     this.a_StorageMaxInBytes = data.a_StorageMaxInBytes;
   }
 
+  public static getPassword = (
+    a_Bucket: number, a_Domain: string, 
+    a_UUID: cassandraDriver.types.TimeUuid
+  ): Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+      const query: string =  `SELECT a_password FROM ${Cassandra.keyspace}.accounts 
+      WHERE a_bucket=? AND a_domain=? AND a_uuid=?`;
+
+      Cassandra.client.execute(query, [
+        a_Bucket, a_Domain, a_UUID
+      ], {
+        prepare: true
+      }).then(res => {
+        if (res.rows.length <= 0) resolve(undefined);
+        else resolve(res.rows[0].a_password);
+      }).catch(err => reject(err));
+    });
+  };
+
   public save = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      const query: string = `INSERT INTO ${Cassandra.keyspace}.accounts(
+      const query: string = `INSERT INTO ${Cassandra.keyspace}.accounts (
         a_username, a_picture_uri, a_password,
         a_domain, a_bucket, a_full_name,
         a_birth_date, a_creation_date, a_rsa_public,
@@ -208,7 +229,10 @@ class AccountShortcut
         prepare: true
       }).then(data => {
         if (data.rows.length <= 0) resolve(undefined);
-        resolve(AccountShortcut.fromMap(data.rows[0]));
+        let result: AccountShortcut = AccountShortcut.fromMap(data.rows[0]);
+        result.a_Domain = domain;
+        result.a_Username = username;
+        resolve(result);
       }).catch(err => reject(err));
     });
   };
