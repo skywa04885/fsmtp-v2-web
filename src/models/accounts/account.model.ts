@@ -126,8 +126,11 @@ class Account
     });
   }
 
+  /**
+   * Gets the current user bucket
+   */
   public static getBucket = (): number => {
-    return Date.now() / 1000 / 1000 / 10;
+    return Math.round(Date.now() / 1000 / 1000 / 10);
   };
 };
 
@@ -187,7 +190,7 @@ class AccountShortcut
         prepare: true
       }).then(() => resolve()).catch(err => reject(err));
     });
-  }
+  };
 
   /**
    * Gets the account shortcut based on domain and username
@@ -205,7 +208,7 @@ class AccountShortcut
         prepare: true
       }).then(data => {
         if (data.rows.length <= 0) resolve(undefined);
-        return AccountShortcut.fromMap(data.rows[0]);
+        resolve(AccountShortcut.fromMap(data.rows[0]));
       }).catch(err => reject(err));
     });
   };

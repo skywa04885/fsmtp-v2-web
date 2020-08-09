@@ -7,5 +7,9 @@ export namespace Routes
     server.post('/auth/register', restify.plugins.conditionalHandler([
       { version: '1.0.0', handler: V1Controllers.POST_AuthRegister }
     ]));
+
+    server.post('/auth/login', restify.plugins.conditionalHandler([
+      { version: '1.0.0', handler: V1Controllers.POST_AuthLogin }
+    ]));
   };
 }

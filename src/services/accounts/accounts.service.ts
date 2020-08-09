@@ -3,6 +3,7 @@ import { readConfig } from '../../helpers/config.helper';
 import { Logger, LoggerLevel } from '../../logger';
 import { Routes } from './routes/index';
 import { Cassandra } from '../../helpers/database.helper';
+import errors from 'restify-errors';
 
 const CONFIG: any = readConfig();
 const PORT: number = CONFIG.services.accounts.port;
@@ -10,6 +11,7 @@ const ADDRESS: string = CONFIG.services.accounts.address;
 
 const logger: Logger = new Logger(LoggerLevel.Info, 'Accounts');
 const server: restify.Server = restify.createServer();
+logger.printWithLevel('Kijk Vader, het werkt .... LMAO', LoggerLevel.Fatal);
 
 // Connects to apache cassandra, and other services
 Cassandra.connect(CONFIG.services.accounts.cassandra);

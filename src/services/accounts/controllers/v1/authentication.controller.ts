@@ -6,12 +6,83 @@ import { readConfig } from '../../../../helpers/config.helper';
 import { passwordHash, passwordVerify } from '../../../../helpers/passwords.helper';;
 import cassandraDriver from 'cassandra-driver';
 import { Logger, LoggerLevel } from '../../../../logger';
-import async from 'async';
+import async, { reject } from 'async';
+import { Mailbox, MailboxFlags } from '../../../../models/mailbox/mailbox.model';
+import { AES256 } from '../../../../helpers/aes.helper';
 
 const config: any = readConfig();
 
 export namespace Controllers
 {
+  const POST_AuthRegister_InitializeMailboxes = (bucket: number, domain: string, uuid: cassandraDriver.types.TimeUuid): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      const defaultConstructorOptions: any = {
+        e_Bucket: bucket,
+        e_Domain: domain,
+        e_UUID: uuid
+      };
+
+      // Prepars the list of mailboxes so we can later perform
+      //  the batch insertion, which basically makes it way faster
+      const mailboxes: Mailbox[] = [
+        new Mailbox(Object.assign(defaultConstructorOptions, {
+          e_MessageCount: 0,
+          e_MailboxPath: 'INBOX',
+          e_MailboxStand: true,
+          e_Subscribed: true,
+          e_Flags: 0
+        })),
+        new Mailbox(Object.assign(defaultConstructorOptions, {
+          e_MessageCount: 0,
+          e_MailboxPath: 'INBOX.Sent',
+          e_MailboxStand: true,
+          e_Subscribed: true,
+          e_Flags: MailboxFlags.Unmarked | MailboxFlags.Sent
+        })),
+        new Mailbox(Object.assign(defaultConstructorOptions, {
+          e_MessageCount: 0,
+          e_MailboxPath: 'INBOX.Spam',
+          e_MailboxStand: true,
+          e_Subscribed: true,
+          e_Flags: MailboxFlags.Marked | MailboxFlags.Junk
+        })),
+        new Mailbox(Object.assign(defaultConstructorOptions, {
+          e_MessageCount: 0,
+          e_MailboxPath: 'INBOX.Archive',
+          e_MailboxStand: true,
+          e_Subscribed: true,
+          e_Flags: MailboxFlags.Unmarked | MailboxFlags.Archive
+        })),
+        new Mailbox(Object.assign(defaultConstructorOptions, {
+          e_MessageCount: 0,
+          e_MailboxPath: 'INBOX.Drafts',
+          e_MailboxStand: true,
+          e_Subscribed: true,
+          e_Flags: MailboxFlags.Unmarked | MailboxFlags.Draft
+        })),
+        new Mailbox(Object.assign(defaultConstructorOptions, {
+          e_MessageCount: 0,
+          e_MailboxPath: 'INBOX.Trash',
+          e_MailboxStand: true,
+          e_Subscribed: true,
+          e_Flags: MailboxFlags.Marked | MailboxFlags.Trash
+        }))
+      ];
+
+      // Performs the batch insertion
+      Mailbox.batchSave(mailboxes)
+        .then(() => resolve())
+        .catch(err => reject(err));
+    });
+  };
+
+  /**
+   * Registers an new account
+   * 
+   * @param req
+   * @param res
+   * @param next
+   */
   export const POST_AuthRegister = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next
@@ -57,9 +128,10 @@ export namespace Controllers
     AccountShortcut.find(config.global.domain, req.body.username).then(accountShortcut => {
       // Checks if the account exists, else send error message
       if (accountShortcut)
-        return next(new errors.InvalidArgumentError({}, 
-          `Username already in use: ${req.body.username}`));
-      
+      {
+        return next(new errors.RestError(`Username already in use: ${req.body.username}`));
+      }
+
       // Since it does not exist, create the new one and hash the 
       //  password, so it can be later used
       logger.print(`Account not existing, generating password hash for: ${req.body.password}`);
@@ -85,35 +157,62 @@ export namespace Controllers
         account.generateKeypair().then(() => {
           logger.print('RSA Keypair generated successfully, storing user in database ...');
 
-          // Creates the account shortcut, and then stores both inside of the database
-          //  after that we proceed with preparing the inbox
-          const accountShortcut: AccountShortcut = new AccountShortcut({
-            a_Domain: account.a_Domain,
-            a_Bucket: account.a_Bucket,
-            a_UUID: account.a_UUID,
-            a_Username: account.a_Username
-          });
+          // Encrypts the private key with the users password, this will make sure
+          //  that even i cannot read their data ( the whole point of fannst mail )
+          AES256.encrypt(<string>account.a_RSAPrivate, req.body.password)
+            .then(encryptedPrivateKey => {
+              account.a_RSAPrivate = encryptedPrivateKey;
 
-          accountShortcut.save().then(() => {
-            account.save().then(() => {
-              logger.print('Stored accounts in database, account created with success ...');
-              res.json({
-                status: true,
-                data: {
-                  domain: accountShortcut.a_Domain,
-                  username: accountShortcut.a_Username,
-                  uuid: accountShortcut.a_UUID,
-                  bucket: accountShortcut.a_Bucket
-                }
+              // Creates the account shortcut, and then stores both inside of the database
+              //  after that we proceed with preparing the inbox
+              const accountShortcut: AccountShortcut = new AccountShortcut({
+                a_Domain: account.a_Domain,
+                a_Bucket: account.a_Bucket,
+                a_UUID: account.a_UUID,
+                a_Username: account.a_Username
               });
+
+              accountShortcut.save().then(() => {
+                account.save().then(() => {
+                  logger.print('Stored account in database, proceeding with mailbox creation ...');
+
+                  POST_AuthRegister_InitializeMailboxes(account.a_Bucket, account.a_Domain, account.a_UUID)
+                    .then(() => {
+                      logger.print('Account ready for usage, signing off..');
+                      res.json({
+                        status: true,
+                        data: {
+                          domain: accountShortcut.a_Domain,
+                          username: accountShortcut.a_Username,
+                          uuid: accountShortcut.a_UUID,
+                          bucket: accountShortcut.a_Bucket
+                        }
+                      });
+                    }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+                    // -> End POST_AuthRegister_InitializeMailboxes()
+                }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+                // -> End account.save()
+              }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+              // -> End accountShortcut.save()
             }).catch(err => next(new errors.InternalServerError({}, err.toString())));
-            // -> End account.save()
+            // -> End AES256.encrypt()
           }).catch(err => next(new errors.InternalServerError({}, err.toString())));
-          // -> End accountShortcut.save()
-        }).catch(err => next(new errors.InternalServerError({}, err.toString())));
         // -> End passwordHash()
       }).catch(err => next(new errors.InternalServerError({}, err.toString())));
       // -> End AccountShortcut.find()
     }).catch(err => next(new errors.InternalServerError({}, err.toString())));
   };
+
+  /**
+   * Logs in to an existing account
+   * 
+   * @param req
+   * @param res
+   * @param next
+   */
+  export const POST_AuthLogin = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+  }
 };
