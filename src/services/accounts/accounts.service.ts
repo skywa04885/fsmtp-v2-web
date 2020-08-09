@@ -3,6 +3,7 @@ import { readConfig } from '../../helpers/config.helper';
 import { Logger, LoggerLevel } from '../../logger';
 import { Routes } from './routes/index';
 import { Cassandra } from '../../helpers/database.helper';
+import cors from 'restify-cors-middleware';
 import errors from 'restify-errors';
 
 const CONFIG: any = readConfig();
@@ -17,7 +18,14 @@ logger.printWithLevel('Kijk Vader, het werkt .... LMAO', LoggerLevel.Fatal);
 Cassandra.connect(CONFIG.services.accounts.cassandra);
 
 // Uses the body parser and other pre-defined things
-//  so we can actaully read the data
+//  so we can actaully read the data, also sets cors
+const corsMiddleware = cors({
+  origins: ['*'],
+  allowHeaders: ['*'],
+  exposeHeaders: ['*']
+});
+server.pre(corsMiddleware.preflight);
+server.use(corsMiddleware.actual);
 server.use(restify.plugins.bodyParser({ mapParams: false }))
 
 // Uses the routes, this is done in an separate file

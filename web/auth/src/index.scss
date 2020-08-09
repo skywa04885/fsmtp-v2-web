@@ -99,6 +99,16 @@ fieldset {
     font-size: 0.9rem;
     margin-bottom: 1.6rem;
   }
+
+  & > .form__error {
+    background-color: rgba(map-get($colors, primary), 0.2);
+    padding: 0.4rem 0.6rem;
+    border: 1px solid rgba(map-get($colors, primary), 0.4);
+    border-radius: $borderRadius;
+    color: map-get($colors, primary);
+    font-size: 0.8rem;
+    font-weight: normal;
+  }
 }
 
 .header {

@@ -1,0 +1,48 @@
+@import '../../theme.scss';
+
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+
+  & > .loader__bar {
+    background-color: rgba(#ffffff, .1);
+    height: 0.5rem;
+    position: relative;
+
+    & > span {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      background-color: rgba(#ffffff, .5);
+      animation: loaderBarSpanAnim 1.2s both infinite;
+
+      @keyframes loaderBarSpanAnim {
+        0% {
+          width: 20%;
+          left: -20%;
+        }
+
+        100% {
+          width: 100%;
+          left: 100%;
+        }
+      }
+    }
+  }
+
+  & > .loader__message {
+    background-color: rgba(#ffffff, 0.2);
+    border: 1px solid rgba(#ffffff, 0.2);
+    color: #ffffff;
+    display: inline-block;
+    padding: 0.3rem;
+    border-radius: $borderRadius;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: normal;
+  }
+}

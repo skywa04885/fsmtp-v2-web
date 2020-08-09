@@ -1,8 +1,9 @@
 import React, { FormEvent } from 'react';
 import FormField from '../components/form/FormField.component';
 import DefaultButton from '../components/buttons/DefaultButton.component';
-
-import FannstIcon from '../static/fannst-icon.png';
+import axios from 'axios';
+import Config from '../Config';
+import cookie from 'react-cookies';
 
 interface LoginPageProps {
 
@@ -15,7 +16,8 @@ export default class LoginPage extends React.Component<any, any> {
     errors: {
       username: any,
       password: any
-    }
+    },
+    error: string
   };
 
   public constructor(props: LoginPageProps)
@@ -28,12 +30,51 @@ export default class LoginPage extends React.Component<any, any> {
       errors: {
         username: '',
         password: ''
-      }
+      },
+      error: ''
     };
   }
 
   public onSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    // Checks if the form is valid, and shows the loader
+    if (!this.valid()) return;
+    this.props.showLoader('Loggin in, please wait ...');
+
+    // Prepares the form fields, like headers, body etcetera
+    //  which will be sent to the server
+    const { username, password } = this.state;
+    const fields = { username, password };
+    const url: string = Config.buildURI('/auth/login');
+    const config: any = {
+      headers: {
+        'accept-version': Config.apiVersion
+      }
+    };
+
+    // Sends the http request, and waits for an server response
+    axios.post(url, fields, config).then(response => {
+      this.props.hideLoader();
+
+      // Checks if the response was successfull, if so redirect
+      //  to the fannst mail service, else show error
+      if (response.status === 200 && response.data.status)
+      {
+        cookie.save('sess-bearer', response.data.bearer, {
+          path: '/'
+        });
+        window.location.href = '/mail/inbox';
+      } else
+        this.setState({
+          error: `${response.status}: ${response.data.message}`
+        })
+    }).catch(err => {
+      this.props.hideLoader();
+      this.setState({
+        error: err.toString()
+      });
+    });
   }
 
   public onChange = (e: Event) => {
@@ -52,8 +93,9 @@ export default class LoginPage extends React.Component<any, any> {
         break;
       case 'password':
         if (value.length === 0 ) errors.password = 'Please enter a password';
-        else if (value.length < 5) errors.password = 'Please enter more than 5 chars';
-        else errors.password = null;        break; 
+        else if (value.length < 12) errors.password = 'Please enter more than 12 chars';
+        else errors.password = null;
+        break; 
       default: break;
     }
 
@@ -64,10 +106,15 @@ export default class LoginPage extends React.Component<any, any> {
     });
   };
 
+  private valid = (): boolean => {
+    const { errors } = this.state;
+    return errors.username === null && errors.password === null;
+  }
+
   public render = (): any =>
   {
-    const { username, password, errors } = this.state;
-    const valid: boolean = errors.username === null && errors.password === null;
+    const { error, username, password, errors } = this.state;
+    const valid: boolean = this.valid();
 
     return (
       <React.Fragment>
@@ -75,7 +122,17 @@ export default class LoginPage extends React.Component<any, any> {
           <fieldset>
             <legend>Login</legend>
             <p>Login to your Fannst-Account</p>
-            
+
+            {error ? (
+              <div className="form__error">
+                <p>
+                  <strong>An error occured: </strong>
+                  <br />
+                  {error}
+                </p>
+              </div>
+            ) : null}
+
             <FormField
               onChange={this.onChange}
               error={errors.username}

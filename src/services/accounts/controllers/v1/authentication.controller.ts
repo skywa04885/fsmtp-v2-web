@@ -13,6 +13,7 @@ import { Bearer } from '../../../../helpers/bearer.helper';
 
 const config: any = readConfig();
 const usernameRegex = '^[A-Za-z0-9._]{1,80}$';
+const domainRegex = '^[A-Za-z0-9.]{1,80}$'
 
 export namespace Controllers
 {
@@ -124,6 +125,12 @@ export namespace Controllers
           required: false,
           format: 'email',
           maxLength: 196
+        },
+        domain: {
+          type: 'string',
+          required: false,
+          pattern: domainRegex,
+          maxLength: 196
         }
       }
     })) return;
@@ -131,6 +138,7 @@ export namespace Controllers
 
     // Checks if the user is already in the database, if so send error
     //  else proceed with operation
+    if (!req.body.domain) req.body.domain = config.global.domain;
     AccountShortcut.find(config.global.domain, req.body.username).then(accountShortcut => {
       // Checks if the account exists, else send error message
       if (accountShortcut)
@@ -149,7 +157,7 @@ export namespace Controllers
           a_Username: req.body.username,
           a_PictureURI: 'def',
           a_Password: hash,
-          a_Domain: config.global.domain,
+          a_Domain: req.body.domain,
           a_Bucket: Account.getBucket(),
           a_FullName: req.body.full_name,
           a_BirthDate: new Date(req.body.birth_date),

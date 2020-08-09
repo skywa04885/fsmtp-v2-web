@@ -30,7 +30,7 @@ export default class FormField extends RandomIDComponent {
       <div className={classnames}>
         <div className="form-field__flexarea">
           <label className="form-field__label" htmlFor={randomID}>{label}{required ? <span>*</span> : null}</label>
-          <input className="form-field__input" autoComplete="new-password" id={randomID} type={type} name={name} value={value} onChange={onChange} />
+          <input className="form-field__input" id={randomID} type={type} name={name} value={value} onChange={onChange} />
         </div>
         <p className="form-field__error">{error}</p>
       </div> 
