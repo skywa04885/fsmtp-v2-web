@@ -1,0 +1,18 @@
+{
+  "services": {
+    "accounts": {
+      "port": "4001",
+      "address": "0.0.0.0",
+      "cassandra": {
+        "hosts": ["192.168.2.11"],
+        "datacenter": "datacenter1",
+        "keyspace": "fannst",
+        "username": "cassandra",
+        "password": "cassandra"
+      }
+    }
+  },
+  "global": {
+    "domain": "fannst.nl"
+  }
+}

@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  fsmtp_v2_web_cassandra:
+    shm_size: 4G
+    image: bitnami/cassandra:latest
+    container_name: fsmtp_v2_web_cassandra
+    ports:
+      - '9042:9042'
