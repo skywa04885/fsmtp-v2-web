@@ -1,0 +1,46 @@
+@import '../../theme.scss';
+
+.form-field {
+  margin-top: 0.6rem;
+
+  & > .form-field__flexarea {
+    display: flex;
+    align-items: center;
+
+    & > .form-field__label {
+      flex: 2;
+      color: #3b3b3b;
+      font-size: 0.9rem;
+
+      & > span {
+        color: map-get($colors, primary);
+      }
+    }
+  
+    & > .form-field__input {
+      flex: 4;
+      padding: 0.4rem;
+      border: 1px solid #b8b8b8;
+      background-color: #f2f2f2;
+      border-radius: 0.2rem;
+    }
+  }
+
+  & > .form-field__error {
+    color: map-get($colors, primary);
+    font-size: 0.8rem;
+    text-align: right;
+    margin-top: 0.3rem;
+    margin-right: 0.3rem;
+    height: 1rem;
+  }
+}
+
+.form-field_invalid {
+  & > .form-field__flexarea {
+    & > .form-field__input {
+      border: 1px solid map-get($colors, primary);
+      box-shadow: 0 0 0 2px rgba(map-get($colors, primary), 0.5);
+    }
+  }
+}

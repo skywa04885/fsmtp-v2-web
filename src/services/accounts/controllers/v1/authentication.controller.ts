@@ -221,6 +221,8 @@ export namespace Controllers
     req: restify.Request, res: restify.Response, 
     next: restify.Next
   ) => {
+    const logger: Logger = new Logger(LoggerLevel.Debug, `POST_AuthLogin:${req.connection.remoteAddress}`);
+
     // Validates the request body, so we are sure that the needed parameters are there
     //  the username and password in this case
     if (!validateRequest(req, res, next, {
@@ -247,6 +249,7 @@ export namespace Controllers
     // Sets the default domain if the domain is empty, then we check if the account
     //  is in the database, if not we send an error
     if (!req.body.domain) req.body.domain = config.global.domain;
+    logger.print(`Login attempt for ${req.body.username}@${req.body.account}, with passphrase: ${req.body.password}`);
     AccountShortcut.find(req.body.domain, req.body.username).then(accountShortcut => {
       // Checks if the account exists, if not send error
       if (!accountShortcut)
@@ -261,11 +264,14 @@ export namespace Controllers
       .then(password => {
         passwordVerify(req.body.password, password).then(valid => {
           if (!valid)
-            return next(new errors.InvalidArgumentError('Supplied password is not valid !'));
+            return next(new errors.InvalidCredentialsError('Supplied password is not valid !'));
           
           // Generates the bearer, and sends the bearer to the client
-          const bearer = Bearer.generate(accountShortcut.a_UUID, accountShortcut.a_Domain, 
-            accountShortcut.a_Bucket, req.body.password);
+          logger.print('Client is authenticated, generating bearer ...');
+          const bearer = Bearer.generate(
+            accountShortcut.a_UUID, accountShortcut.a_Domain, 
+            accountShortcut.a_Bucket, req.body.password, accountShortcut.a_Username
+          );
           res.json({
             status: true,
             bearer

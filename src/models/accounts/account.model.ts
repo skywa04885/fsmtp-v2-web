@@ -69,6 +69,13 @@ class Account
     this.a_StorageMaxInBytes = data.a_StorageMaxInBytes;
   }
 
+  /**
+   * Gets the password of a user from the database
+   * 
+   * @param a_Bucket The bucket
+   * @param a_Domain The domain
+   * @param a_UUID The UUID
+   */
   public static getPassword = (
     a_Bucket: number, a_Domain: string, 
     a_UUID: cassandraDriver.types.TimeUuid
@@ -88,6 +95,9 @@ class Account
     });
   };
 
+  /**
+   * Saves an account to the database
+   */
   public save = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
       const query: string = `INSERT INTO ${Cassandra.keyspace}.accounts (
@@ -119,6 +129,73 @@ class Account
       ], {
         prepare: true
       }).then(() => resolve()).catch(err => reject(err));
+    });
+  };
+
+  /**
+   * Creates an account based on an map
+   * 
+   * @param map The raw map
+   */
+  public static fromMap = (map: any) => {
+    return new Account({
+      a_Username: map['a_username'],
+      a_PictureURI: map['a_picture_uri'],
+      a_Password: map['a_password'],
+      a_Domain: map['a_domain'],
+      a_Bucket: parseInt(map['a_bucket']),
+      a_FullName: map['a_full_name'],
+      a_BirthDate: new Date(parseInt(map['a_birth_date'])),
+      a_CreationDate: new Date(parseInt(map['a_creation_date'])),
+      a_RSAPublic: map['a_rsa_public'],
+      a_RSAPrivate: map['a_rsa_private'],
+      a_Gas: map['a_gas'],
+      a_Country: map['a_country'],
+      a_Region: map['a_region'],
+      a_City: map['a_city'],
+      a_Address: map['a_address'],
+      a_Phone: map['a_phone'],
+      a_Type: map['a_type'],
+      a_UUID: map['a_uuid'],
+      a_Flags: parseInt(map['a_flags']),
+      a_StorageUsedInBytes: parseInt(map['a_storage_used_bytes']),
+      a_StorageMaxInBytes: parseInt(map['a_storage_max_bytes'])
+    });
+  };
+  
+  /**
+   * Gets an user from the database, the full account to be precise
+   * 
+   * @param a_Bucket The bucket
+   * @param a_Domain The domain
+   * @param a_UUID The UUID
+   */
+  public static get = (
+    a_Bucket: number, a_Domain: string, 
+    a_UUID: cassandraDriver.types.TimeUuid
+  ): Promise<Account> => {
+    return new Promise<Account>((resolve, reject) => {
+      const query: string = `SELECT a_username, a_picture_uri, a_password,
+      a_full_name, a_birth_date, a_creation_date, 
+      a_rsa_public, a_rsa_private, a_gas, a_country, 
+      a_region, a_city, a_address, a_phone, 
+      a_type, a_flags, a_storage_used_bytes, 
+      a_storage_max_bytes
+      FROM ${Cassandra.keyspace}.accounts 
+      WHERE a_bucket=? AND a_domain=? AND a_uuid=?`;
+
+      Cassandra.client.execute(query, [
+        a_Bucket, a_Domain, a_UUID
+      ], {
+        prepare: true
+      }).then(res => {
+        if (res.rows.length <= 0) resolve(undefined);
+        let account: Account = Account.fromMap(res.rows[0]);
+        account.a_Domain = a_Domain;
+        account.a_UUID = a_UUID;
+        account.a_Bucket = a_Bucket;
+        resolve(account);
+      }).catch(err => reject(err));
     });
   };
 

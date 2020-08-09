@@ -1,0 +1,29 @@
+@import '../../theme.scss';
+
+.default-button {
+  display: block;
+  padding: 0.6rem 1.6rem;
+  margin-top: 1.2rem;
+  border-radius: 0.3rem;
+  width: max-content;
+  color: #f2f2f2;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.default-button_active {
+  background-color: map-get($colors, primary);
+  cursor: pointer;
+
+  &:hover {
+    background-color: map-get($colors, secondary);
+    box-shadow: 0 0 0 3px rgba(map-get($colors, secondary), 0.5);
+  }
+}
+
+.default-button_inactive {
+  cursor: not-allowed;
+  background-color: rgba(#000000, 0.3);
+}

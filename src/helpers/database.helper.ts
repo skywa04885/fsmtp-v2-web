@@ -13,7 +13,6 @@ class Cassandra
     Cassandra.keyspace = config.keyspace;
 
     const authProvider = new cassandraDriver.auth.PlainTextAuthProvider(config.username, config.password);
-
     Cassandra.client = new cassandraDriver.Client({
       contactPoints: config.hosts,
       keyspace: config.keyspace,
