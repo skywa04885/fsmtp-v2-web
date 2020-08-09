@@ -1,0 +1,91 @@
+@import '../../theme.scss';
+
+.splashscreen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80vw;
+  max-width: 500px;
+
+  & > .splashscreen__motd {
+    width: 100%;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  & > .splashscreen__loader {
+    margin-top: 1rem;
+    position: relative;
+    height: 0.5rem;
+    overflow: hidden;
+    border-radius: $borderRadius;
+    background-color: rgba(#fff, 0.3);
+
+    & > span {
+      animation: SplashscreenLoaderBar 1.5s both infinite;
+      background-color: rgba(#fff, 0.3);
+      position: absolute;
+      top: 0;
+      bottom: 0;
+    }
+
+    & > span:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    & > span:nth-child(2) {
+      animation-delay: 0s;
+    }
+
+    @keyframes SplashscreenLoaderBar {
+      from {
+        left: -20%;
+        width: 20%;
+      }
+
+      to {
+        left: 100%;
+        width: 100%;
+      }
+    }
+  }
+
+  & > .splashscreen__message {
+    color: rgba(#fff, .6);
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+
+    & > span {
+      font-size: 1rem;
+      animation: SplashscreenLoadingDot 1.4s both infinite;
+
+      &:nth-child(1) {
+        animation-delay: 0;
+      }
+
+      &:nth-child(2) {
+        animation-delay: .2s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: .4s;
+      }
+
+      @keyframes SplashscreenLoadingDot {
+        0% {
+          opacity: .2;
+        }
+
+        20% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: .2;
+        }
+      }
+    }
+  }
+}

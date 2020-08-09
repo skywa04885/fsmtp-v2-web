@@ -149,7 +149,7 @@ class Account
       a_CreationDate: new Date(parseInt(map['a_creation_date'])),
       a_RSAPublic: map['a_rsa_public'],
       a_RSAPrivate: map['a_rsa_private'],
-      a_Gas: map['a_gas'],
+      a_Gas: parseFloat(map['a_gas']),
       a_Country: map['a_country'],
       a_Region: map['a_region'],
       a_City: map['a_city'],
