@@ -1,11 +1,11 @@
 .toolbar {
-  height: 4rem;
+  height: 3rem;
   display: flex;
   align-items: center;
-  justify-content: end;
+  justify-content: start;
 
   & > .toolbar__list {
-    margin-right: 1rem;
+    margin-left: 0.4rem;
 
     & > .toolbar__list__elem {
       display: inline-block;  
@@ -17,8 +17,8 @@
         border: none;
         outline: none;
         cursor: pointer;
-        width: 3rem;
-        height: 3rem;
+        width: 2.5rem;
+        height: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -28,6 +28,8 @@
         & > svg {
           display: block;
           fill: #fff;
+          width: 1.2rem;
+          height: 1.2rem;
         }
 
         &:hover {
