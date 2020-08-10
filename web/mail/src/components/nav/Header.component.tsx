@@ -19,24 +19,6 @@ export default class Header extends React.Component<any, any> {
       showAccount: false
     };
   }
-  
-  public componentDidMount = (): void => {
-    window.addEventListener('click', this.handleClickEvent);
-  };
-
-  public componentWillUnmount = (): void => {
-    window.removeEventListener('click', this.handleClickEvent);
-  };
-
-  public handleClickEvent = (e: Event) => {
-    if (!this.refs.header) return;
-    const header: any = ReactDOM.findDOMNode(this.refs.header);
-
-    if (!header.contains(e.target))
-      if (this.state.showAccount) this.setState({
-        showAccount: false
-      });
-  };
 
   public onSearch = (e: FormEvent): void => {
     e.preventDefault();

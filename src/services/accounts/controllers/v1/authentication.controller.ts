@@ -7,7 +7,7 @@ import { passwordHash, passwordVerify } from '../../../../helpers/passwords.help
 import cassandraDriver from 'cassandra-driver';
 import { Logger, LoggerLevel } from '../../../../logger';
 import async, { reject } from 'async';
-import { Mailbox, MailboxFlags } from '../../../../models/mailbox/mailbox.model';
+import { Mailbox, MailboxFlags } from '../../../../models/mail/mailbox.model';
 import { AES256 } from '../../../../helpers/aes.helper';
 import { Bearer } from '../../../../helpers/bearer.helper';
 

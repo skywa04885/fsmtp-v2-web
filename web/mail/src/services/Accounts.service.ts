@@ -9,6 +9,13 @@ export class AccountService {
   public static port: number = 4001;
 
   /**
+   * Builds the bearer string
+   */
+  public static buildBearer = (): string => {
+    return `Bearer ${AccountService.bearer}`;
+  };
+
+  /**
    * Authenticates the current client using the bearer
    */
   public static authenticate = (): Promise<boolean> => {
@@ -37,7 +44,7 @@ export class AccountService {
       const url: string = Config.buildURL('/accounts/get', AccountService.port);
       const options: any = {
         headers: Object.assign(Config.defaultHeaders, {
-          'Authorization': `Bearer ${AccountService.bearer}`
+          'Authorization': AccountService.buildBearer()
         })
       };
 

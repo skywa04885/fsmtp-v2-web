@@ -145,7 +145,7 @@ class Mailbox {
       const query: string = `SELECT e_mailbox_path, e_mailbox_stand, e_message_count, e_flags, e_subscribed
       FROM fannst.mailboxes 
       WHERE e_bucket=? AND e_domain=? AND e_uuid=? 
-      AND ${subscribedOnly ? 'e_subscribed=true' : ''} ALLOW FILTERING`;
+      ${subscribedOnly ? 'AND e_subscribed=true' : ''} ALLOW FILTERING`;
 
       Cassandra.client.execute(query, [
         e_Bucket, e_Domain, e_UUID

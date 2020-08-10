@@ -1,0 +1,88 @@
+@import '../../theme.scss';
+
+.loader {
+  z-index: 1000;
+
+  & > .loader__bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+    height: 0.4rem;
+    background-color: rgba(#fff, 0.08);
+
+    & > span {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      animation: LoaderBarSpan 1.4s both infinite;
+      background-color: rgba(#fff, 0.2);
+
+      &:nth-child(1) {
+        animation-delay: 0s;
+      }
+
+      &:nth-child(2) {
+        animation-delay: .4s;
+      }
+
+      @keyframes LoaderBarSpan {
+        from {
+          left: -20%;
+          width: 20%;
+        }
+
+        to {
+          left: 100%;
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  & > .loader__message {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translate(-50%);
+    
+    background-color: rgba(#fff, 0.7);
+    border: 1px solid rgba(#fff, 0.9);
+    padding: 0.4rem;
+    color: #323232;
+    border-radius: $borderRadius;
+    font-size: 0.9rem;
+
+    & > span {
+      font-size: 1rem;
+      animation: LoaderMessageDot 1.4s both infinite;
+
+      &:nth-child(1) {
+        animation-delay: 0;
+      }
+
+      &:nth-child(2) {
+        animation-delay: .2s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: .4s;
+      }
+
+      @keyframes LoaderMessageDot {
+        0% {
+          opacity: .2;
+        }
+
+        20% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: .2;
+        }
+      }
+    }
+  }
+}

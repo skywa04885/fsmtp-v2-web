@@ -6,10 +6,10 @@ import { Cassandra } from '../../helpers/database.helper';
 import cors from 'restify-cors-middleware';
 
 const CONFIG: any = readConfig();
-const PORT: number = CONFIG.services.accounts.port;
-const ADDRESS: string = CONFIG.services.accounts.address;
+const PORT: number = CONFIG.services.mailboxes.port;
+const ADDRESS: string = CONFIG.services.mailboxes.address;
 
-const logger: Logger = new Logger(LoggerLevel.Info, 'Accounts');
+const logger: Logger = new Logger(LoggerLevel.Info, 'Mailboxes');
 const server: restify.Server = restify.createServer();
 
 Cassandra.connect(CONFIG.global.cassandra);
@@ -21,7 +21,9 @@ const corsMiddleware = cors({
 });
 server.pre(corsMiddleware.preflight);
 server.use(corsMiddleware.actual);
-server.use(restify.plugins.bodyParser({ mapParams: false }))
+server.use(restify.plugins.bodyParser({
+  mapParams: false
+}));
 
 Routes.use(server);
 
