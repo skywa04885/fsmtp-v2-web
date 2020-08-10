@@ -12,6 +12,7 @@ import { Mailbox } from './models/Mailbox.model';
 
 import './app.scss';
 import { MailboxesService } from './services/Mailboxes.service';
+import EmailPage from './pages/Email.page';
 
 const StartupSound =  require('./static/startup.mp3');
 
@@ -21,10 +22,12 @@ class App extends React.Component {
   state: {
     loading: boolean,
     loaderMessage: string,
-    mailboxes: Mailbox[]
+    mailboxes: Mailbox[],
+    ready: boolean
   };
 
   private loader: React.RefObject<Loader> = React.createRef<Loader>();
+  private mailboxPage: React.RefObject<MailboxPage> = React.createRef<MailboxPage>();
 
   public constructor(props: AppProps) {
     super(props);
@@ -32,7 +35,8 @@ class App extends React.Component {
     this.state = {
       loading: true,
       loaderMessage: 'Loading page',
-      mailboxes: []
+      mailboxes: [],
+      ready: false
     };
   }
 
@@ -75,20 +79,17 @@ class App extends React.Component {
     }, 100);
   };
 
-  private _refreshing: boolean = false;
   public refresh = (): void => {
-    if (this._refreshing) return;
-    else this._refreshing = true;
     this.loader?.current?.show('Loading mailboxes');
 
     setTimeout(() => {
       MailboxesService.gatherMailboxes().then(mailboxes => {
         this.setState({
-          mailboxes
+          mailboxes,
+          ready: true
         });
 
         this.loader?.current?.hide();
-        this._refreshing = false;
       }).catch(err => {});
     }, 200);
   };
@@ -104,13 +105,14 @@ class App extends React.Component {
    * Renders the page, and if loading the splashscreen
    */
   public render = (): any => {
-    const { loading, loaderMessage, mailboxes } = this.state;
+    const { loading, loaderMessage, mailboxes, ready } = this.state;
 
     if (loading) return <Splashscreen message={loaderMessage} />
-    else return (
+
+    return (
       <React.Fragment>
         <div className="app">
-          <div className="app__sidebar" id="app__sidebar" ref="sidebar" >
+          <div className="app__sidebar" id="app__sidebar" >
             <ul className="app__sidebar__ul">
               <li className="app__sidebar__ul__li">
                 {/* The folders */}
@@ -120,7 +122,7 @@ class App extends React.Component {
                 <ul className="app__sidebar__ul__li__folders">
                   {mailboxes.map((mailbox: Mailbox) => {
                     return (
-                      <li>
+                      <li key={mailbox.e_MailboxPath}>
                         <NavLink
                           className="app__sidebar__folder"
                           activeClassName="app__sidebar__folder-active"
@@ -139,12 +141,25 @@ class App extends React.Component {
           <div className="app__wrapper">
             <Loader ref={this.loader} />
             <Header toggleSidebar={this.toggleSidebar} />
-            <Toolbar state={ToolbarState.Default} />
+            <Toolbar onRefresh={() => this.mailboxPage?.current?.refresh()} state={ToolbarState.Default} />
             <div className="app__content">
-              <Switch>
-                <Route path="/mailbox/:mailbox" component={MailboxPage} />
-                <Redirect to="/mailbox/INBOX" />
-              </Switch>
+              {!ready ? null : (
+                <Switch>
+                  <Route path="/mailbox/:mailbox" component={(props: any) => {
+                    return (
+                      <MailboxPage
+                        ref={this.mailboxPage}
+                        history={props.history}
+                        match={props.match}
+                        showLoader={(message: string) => this.loader?.current?.show(message)}
+                        hideLoader={() => this.loader?.current?.hide()}
+                      />
+                    );
+                  }} />
+                  <Route path="/mail/:bucket/:uuid" component={EmailPage} />
+                  <Redirect to="/mailbox/INBOX" />
+                </Switch>
+              )}
             </div>
           </div>
         </div>

@@ -45,10 +45,10 @@ export class EmailShortcut {
       e_OwnersUUID: map['e_owners_uuid'],
       e_EmailUUID: map['e_email_uuid'],
       e_UID: map['e_uid'],
-      e_Flags: map['e_flags'],
-      e_Bucket: map['e_bucket'],
+      e_Flags: parseInt(map['e_flags']),
+      e_Bucket: parseInt(map['e_bucket']),
       e_Mailbox: map['e_mailbox'],
-      e_SizeOctets: map['e_size_octets']
+      e_SizeOctets: parseInt(map['e_size_octets'])
     });
   };
 
@@ -58,7 +58,7 @@ export class EmailShortcut {
     e_OwnersUUID: cassandraDriver.types.TimeUuid
   ): Promise<EmailShortcut[]> => {
     return new Promise<EmailShortcut[]>((resolve, reject) => {
-      const query: string = `SELECT * FROM fannst.email_shortcuts
+      const query: string = `SELECT * FROM ${Cassandra.keyspace}.email_shortcuts
       WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=?`;
 
       const stream = Cassandra.client.stream(query, [e_Domain, e_OwnersUUID, e_Mailbox], {

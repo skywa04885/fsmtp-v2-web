@@ -3,7 +3,8 @@ export default class Config
   public static host: string = 'localhost';
   public static method: string = 'http';
   public static defaultHeaders: any = {
-    'accept-version': '1.0.0'
+    'Accept-Version': '1.0.0',
+    'Fannst-From': 'Webmail Client'
   };
 
   /**

@@ -7,7 +7,9 @@ import { EmailShortcutElement } from '../components/mailbox/EmailShortcutElement
 import './Mailbox.styles.scss';
 
 interface InboxPageProps {
-  mailbox: string
+  mailbox: string,
+  showLoader: (message: string) => {},
+  hideLoader: () => {}
 }
 
 export default class MailboxPage extends React.Component<any, any>
@@ -24,14 +26,20 @@ export default class MailboxPage extends React.Component<any, any>
     super(props);
 
     this.state = {
-      loading: true,
+      loading: false,
       page: 0,
       shortcuts: [],
-      mailbox: ''
+      mailbox: '',
     };
   }
 
-  public componentDidUpdate = (prev: InboxPageProps) => {
+  public componentDidMount = (): void => {
+    this.setState({
+      mailbox: this.props.match.params.mailbox
+    }, () => this.refresh());
+  };
+  
+  public componentDidUpdate = (prev: InboxPageProps): void => {
     const { mailbox } = this.state;
     const newMailbox = this.props.match.params.mailbox;
     if (mailbox !== newMailbox)
@@ -41,7 +49,6 @@ export default class MailboxPage extends React.Component<any, any>
       }, () => this.refresh());
     }
   };
-
 
   public refresh = (): void => {
     const { page, loading, mailbox } = this.state;
@@ -59,6 +66,22 @@ export default class MailboxPage extends React.Component<any, any>
       });
     }, 100);
   };
+  
+  public onClick = (bucket: number, uuid: string): void => {
+    const { history } = this.props;
+    history.push(`/mail/${bucket}/${uuid}`);
+
+    // const { showLoader, hideLoader } = this.props;
+    // showLoader('Loading message');
+
+    // setTimeout(() => {
+    //   MailboxesService.getEmail(bucket, uuid).then(email => {
+    //     hideLoader();
+    //   }).catch(err => {
+    //     hideLoader();
+    //   });
+    // }, 100);
+  };
 
   public render = (): any => {
     const { loading, shortcuts } = this.state;
@@ -72,7 +95,17 @@ export default class MailboxPage extends React.Component<any, any>
             </div>
           </div>
           <ul className="mailbox__content">
-            { shortcuts.map(shortcut => <EmailShortcutElement key={shortcut.e_UID} shortcut={shortcut} />) }
+            {
+              shortcuts.map(shortcut => {
+                return (
+                  <EmailShortcutElement
+                    onClick={() => this.onClick(shortcut.e_Bucket, shortcut.e_EmailUUID)}
+                    key={shortcut.e_UID}
+                    shortcut={shortcut}
+                  />
+                )
+              })
+            }
           </ul>
         </div>
       </React.Fragment>

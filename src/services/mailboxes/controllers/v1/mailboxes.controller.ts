@@ -1,10 +1,12 @@
 import restify from 'restify';
 import errors from 'restify-errors';
+import cassandraDriver from 'cassandra-driver';
 import { Bearer } from '../../../../helpers/bearer.helper';
 import { Mailbox } from '../../../../models/mail/mailbox.model';
 import { validateRequest } from '../../../../helpers/validation.helper';
 import { EmailShortcut } from '../../../../models/mail/email-shortcut.model';
 import { reject } from 'async';
+import { EmailRaw } from '../../../../models/mail/email-raw.model';
 
 export namespace Controllers
 {
@@ -67,6 +69,31 @@ export namespace Controllers
         // -> End EmailShortcut.gatherAll()
       }).catch(err => next(new errors.InternalServerError({}, err.toString())));
       // -> End Bearer.authRequest()
+    }).catch(err => {});
+  };
+
+  export const GET_GetEmail = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+    let bucket: number;
+    let emailUuid: cassandraDriver.types.TimeUuid;
+
+    if (!req.headers['email-bucket'])
+      return next(new errors.InvalidHeaderError('Email-Bucket header is required'));
+    else bucket = parseInt(req.headers['email-bucket'].toString());
+
+    if (!req.headers['email-uuid'])
+      return next(new errors.InvalidHeaderError('Email-UUID header is required'));
+    else emailUuid = cassandraDriver.types.TimeUuid.fromString(req.headers['email-uuid'].toString());
+
+    Bearer.authRequest(req, res, next).then(authObj => {
+      EmailRaw.get(bucket, authObj.domain, authObj.uuid, emailUuid).then(email => {
+        if (!email) next(new errors.ResourceNotFoundError());
+        else res.send(200, email.e_Content, {
+          'Content-Type': 'text/plain'
+        });
+      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
     }).catch(err => {});
   };
 }

@@ -11,5 +11,9 @@ export namespace Routes
     server.get('/get/content', restify.plugins.conditionalHandler([
       {version: '1.0.0', handler: MailboxesControllers.GET_GetMailboxContent}
     ]));
+
+    server.get('/get/email', restify.plugins.conditionalHandler([
+      {version: '1.0.0', handler: MailboxesControllers.GET_GetEmail}
+    ]));
   };
 }

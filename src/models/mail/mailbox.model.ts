@@ -58,7 +58,7 @@ class Mailbox {
 
   public static batchSave = (mailboxes: Mailbox[]): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      const query: string = `INSERT INTO fannst.mailboxes (
+      const query: string = `INSERT INTO ${Cassandra.keyspace}.mailboxes (
         e_bucket, e_domain, e_uuid,
         e_mailbox_path, e_mailbox_stand, e_message_count,
         e_flags, e_subscribed
@@ -91,7 +91,7 @@ class Mailbox {
 
   public save = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      const query: string = `INSERT INTO fannst.mailboxes (
+      const query: string = `INSERT INTO ${Cassandra.keyspace}.mailboxes (
         e_bucket, e_domain, e_uuid,
         e_mailbox_path, e_mailbox_stand, e_message_count,
         e_flags, e_subscribed
@@ -117,7 +117,7 @@ class Mailbox {
   ): Promise<Mailbox[]> => {
     return new Promise<Mailbox[]>((resolve, reject) => {
       const query: string = `SELECT e_mailbox_path, e_mailbox_stand, e_message_count, e_flags, e_subscribed
-      FROM fannst.mailboxes 
+      FROM ${Cassandra.keyspace}.mailboxes 
       WHERE e_bucket=? AND e_domain=? AND e_uuid=? 
       ${subscribedOnly ? 'AND e_subscribed=true' : ''} ALLOW FILTERING`;
 

@@ -1,11 +1,11 @@
 @import '../theme.scss';
 
 .mailbox {
-  .mailbox__loader {
-    .mailbox__loader-bar {
+  & > .mailbox__loader {
+    & > .mailbox__loader-bar {
       position: absolute;
       overflow: hidden;
-      top: 0;
+      bottom: 0;
       right: 0;
       left: 0;
       height: 0.3rem;
@@ -27,7 +27,7 @@
             left: -20%;
             width: 20%;
           }
-  
+          
           to {
             width: 100%;
             left: 100%;

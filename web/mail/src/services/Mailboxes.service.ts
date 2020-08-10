@@ -68,4 +68,28 @@ export class MailboxesService {
       }).catch(err => reject(err));
     });
   };
+
+  public static getEmail = (bucket: number, uuid: string): Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+      // Preppares the data for axios, like the headers and url
+      //  we will send custom headers to specify which email we want
+      const url: string = Config.buildURL('/get/email', MailboxesService.port);
+      const options: any = {
+        headers: Object.assign(Config.defaultHeaders, {
+          'Authorization': AccountService.buildBearer(),
+          'Email-UUID': uuid,
+          'Email-Bucket': bucket
+        })
+      };
+
+      // Sends the request, and returns the string.. if this
+      //  fails we throw an error
+      Axios.get(url, options).then(response => {
+        // Checks if the status is 200
+        if (response.status !== 200)
+          reject(new Error(`${response.status}: ${response.statusText}`));
+        else resolve(response.data);
+      }).catch(err => reject(err));
+    });
+  };
 }

@@ -7,7 +7,8 @@ export enum ToolbarState {
 }
 
 interface ToolbarProps {
-  state: ToolbarState
+  state: ToolbarState,
+  onRefresh: () => {}
 }
 
 export class Toolbar extends React.Component<any, any> {
@@ -16,7 +17,7 @@ export class Toolbar extends React.Component<any, any> {
   }
 
   private getElements = (): any[] => {
-    const { state } = this.props;
+    const { state, onRefresh } = this.props;
     switch (state)
     {
       case ToolbarState.Message:
@@ -25,7 +26,7 @@ export class Toolbar extends React.Component<any, any> {
         ];
       default: case ToolbarState.Default:
         return [
-          <li className="toolbar__list__elem">
+          <li className="toolbar__list__elem" onClick={onRefresh}>
             <button type="button">
             <svg
               xmlns="http://www.w3.org/2000/svg"
