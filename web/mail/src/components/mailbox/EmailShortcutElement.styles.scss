@@ -1,0 +1,48 @@
+@import '../../theme.scss';
+
+.email-shortcut-elem {
+  & > a {
+    text-decoration: none;
+    cursor: pointer;
+
+    padding: 0.5rem 0.9em;
+    background-color: rgba(#fff, .8);
+    border-bottom: 1px solid rgba(#fff, 0.5);
+    transition: all .08s;
+    display: flex;
+
+    &:hover {
+      background-color: rgba(#fff, .9);
+      box-shadow: 2px 2px rgba(#000, .4);
+      border-left: 2px solid map-get($colors, primary);
+      border-bottom: 1px solid transparent;
+    }
+  
+    & > .email-shortcut-elem__left {
+      margin-right: 1rem;
+      max-width: 120px;
+      width: 100%;
+  
+      & > p {
+        color: #323232;
+        font-size: 0.9rem;
+        font-weight: bold;
+      }
+    }
+  
+    & > .email-shortcut-elem__middle {
+      flex-grow: 1;
+  
+      & > p {
+        max-width: 300px;
+        user-select: none;
+        pointer-events: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.8rem;
+        color: #454545;
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@ import { Switch, Redirect, Route, NavLink } from 'react-router-dom';
 import { Howler, Howl } from 'howler';
 
 import { AccountService } from './services/Accounts.service';
-import InboxPage from './pages/Inbox.page';
+import MailboxPage from './pages/Mailbox.page';
 import Header from './components/nav/Header.component';
 import Splashscreen from './components/misc/Splashscreen.component';
 import { Toolbar, ToolbarState } from './components/nav/Toolbar.component';
@@ -66,7 +66,7 @@ class App extends React.Component {
               this.setState({
                 loading: false
               }, () => this.refresh());
-            }, 100);
+            }, 400);
           }
         }).catch(err => {
           
@@ -142,7 +142,7 @@ class App extends React.Component {
             <Toolbar state={ToolbarState.Default} />
             <div className="app__content">
               <Switch>
-                <Route path="/mailbox" component={InboxPage} />
+                <Route path="/mailbox/:mailbox" component={MailboxPage} />
                 <Redirect to="/mailbox/INBOX" />
               </Switch>
             </div>

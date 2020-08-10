@@ -23,11 +23,6 @@ class Mailbox {
   public e_Subscribed: boolean;
   public e_Flags: number;
   
-  /**
-   * The default constructor for the mailbox
-   * 
-   * @param data The data for the new mailbox instance
-   */
   public constructor(data: {
     e_Bucket: number,
     e_MessageCount: number,
@@ -48,11 +43,6 @@ class Mailbox {
     this.e_Flags = data.e_Flags;
   }
 
-  /**
-   * Returns the class representation of an database map
-   * 
-   * @param map The map with the values
-   */
   static fromMap = (map: any): Mailbox => {
     return new Mailbox({
       e_Bucket: map['e_bucket'],
@@ -66,11 +56,6 @@ class Mailbox {
     });
   };
 
-  /**
-   * Stores an array of mailboxes
-   * 
-   * @param mailboxes The list of mailboxes to save
-   */
   public static batchSave = (mailboxes: Mailbox[]): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
       const query: string = `INSERT INTO fannst.mailboxes (
@@ -104,9 +89,6 @@ class Mailbox {
     });
   };
 
-  /**
-   * Saves an single mailbox, basically the current instance
-   */
   public save = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
       const query: string = `INSERT INTO fannst.mailboxes (
@@ -129,14 +111,6 @@ class Mailbox {
     });
   };
 
-  /**
-   * Gets an array of all mailboxes
-   * 
-   * @param e_Bucket The users bucket
-   * @param e_Domain The users doimain
-   * @param e_UUID The users user id
-   * @param subscribedOnly If we only want subscribed mailboxes
-   */
   public static gatherAll = (
     e_Bucket: number, e_Domain: string, 
     e_UUID: cassandraDriver.types.TimeUuid, subscribedOnly: boolean

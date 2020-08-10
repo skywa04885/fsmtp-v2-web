@@ -1,6 +1,12 @@
 version: '3'
 
 services:
+  fsmtp_v2_web_redis:
+    shm_size: 2G
+    image: redis
+    container_name: fsmtp_v2_web_redis
+    ports:
+      - '6379:6379'
   fsmtp_v2_web_cassandra:
     shm_size: 4G
     image: bitnami/cassandra:latest

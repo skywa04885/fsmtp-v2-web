@@ -79,13 +79,6 @@ export namespace Controllers
     });
   };
 
-  /**
-   * Registers an new account
-   * 
-   * @param req
-   * @param res
-   * @param next
-   */
   export const POST_AuthRegister = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next
@@ -218,13 +211,6 @@ export namespace Controllers
     }).catch(err => next(new errors.InternalServerError({}, err.toString())));
   };
 
-  /**
-   * Logs in to an existing account
-   * 
-   * @param req
-   * @param res
-   * @param next
-   */
   export const POST_AuthLogin = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next
