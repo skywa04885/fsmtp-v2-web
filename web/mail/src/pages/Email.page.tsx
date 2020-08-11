@@ -5,6 +5,8 @@ import { parse } from '../parsers/MIMEParser.parser';
 import { Email, EmailAddress, EmailContentType } from '../models/Email.model';
 
 import './Email.styles.scss';
+import { time } from 'console';
+import { NotImplementedError } from 'restify-errors';
 
 interface EmailPageProps {
   bucket: number,
@@ -67,6 +69,25 @@ export default class EmailPage extends React.Component<any, any> {
     );
   };
 
+  public onFrameLoad = (e: any) => {
+    const frame: HTMLIFrameElement = e.target as HTMLIFrameElement;
+    const document = frame.contentWindow?.document;
+    if (!document) return;
+
+    const body: HTMLBodyElement = document.querySelector('body') as HTMLBodyElement;
+    const head: HTMLHeadElement = document.querySelector('head') as HTMLHeadElement;
+
+    // Sets the default styles
+    body.style.fontFamily = 'sans-serif';
+    body.style.color = '#323232';
+
+    // Configures that all the links will be opened in a new window instead
+    //  of in the iframe itself
+    const node: HTMLBaseElement = document.createElement('base');
+    node.setAttribute('target', '_blank');
+    head.appendChild(node);
+  };
+
   public render = (): any => {
     const { email, error } = this.state;
 
@@ -82,17 +103,23 @@ export default class EmailPage extends React.Component<any, any> {
       );
     } else if (!email) return null;
 
-    let contentIndex: number;
+    let contentIndex: number = -1;
     let htmlIndex: number = -1, textIndex: number = -1, i: number = 0;
+    let attachmentCount: number = 0;
     for (let section of email.e_Sections) {
       if (section.e_Type === EmailContentType.TextPlain) textIndex = i;
       if (section.e_Type === EmailContentType.TextHTML) htmlIndex = i;
+      if (
+        section.e_Type === EmailContentType.Unknown || 
+        section.e_Type === EmailContentType.ImagePng ||
+        section.e_Type === EmailContentType.ImageJpg
+      ) ++attachmentCount;
+      
       i++;
     }
 
     if (htmlIndex !== -1) contentIndex = htmlIndex;
     else if (textIndex !== -1) contentIndex = textIndex;
-    else contentIndex = -1;
 
     return (
       <React.Fragment>
@@ -113,9 +140,15 @@ export default class EmailPage extends React.Component<any, any> {
               <div className="email__content-header__middle">
                 <span>From:</span>
                 { this.renderAddressList(email?.e_From) }
-                <hr />
+                <div />
                 <span>To: </span>
                 { this.renderAddressList(email?.e_To) }
+                <div />
+                <span>Date: </span>
+                <p>{ email.e_Date?.toDateString() }</p>
+                <div />
+                <span>Attachments: </span>
+                <p><a>{ attachmentCount } &laquo; View</a></p>
               </div>
               <div className="email__content-header__right">
                 <ul>
@@ -125,12 +158,15 @@ export default class EmailPage extends React.Component<any, any> {
                   <li>
                     <button type="button">Reply</button>
                   </li>
+                  <li>
+                    <button type="button">Details</button>
+                  </li>
                 </ul>
               </div>
             </div>
             <div className="email__content-readable">
               <h2>{ email.e_Subject }</h2>
-              <iframe srcDoc={email.e_Sections[contentIndex].e_Content}></iframe>
+              {contentIndex !== -1 ? <iframe id="emailFrame" onLoad={this.onFrameLoad} srcDoc={email.e_Sections[contentIndex].e_Content}></iframe> : null}
             </div>
           </div>
         </div>

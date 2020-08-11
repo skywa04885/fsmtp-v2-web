@@ -136,6 +136,8 @@ const decodeQuotedPrintable = (raw: string): string => {
 
 const recursiveParse = async (raw: string, target: Email, i: number) => {
   const { headers, body } = splitHeadersAndBody(raw);
+  console.log(uniteLines(headers));
+
   const parsedHeaders: Header[] = parseHeaders(headers);
   let resultSection: EmailBodySection = {
     e_Index: i,
@@ -203,6 +205,7 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
       // Starts looping over the lines, and parsing the individual
       //  sections into the target
       let temp: string = '';
+      let sectionIndex: number = 0;
       for (let line of lines) {
         if (line.substring(0, 2) === '--')
         {
@@ -217,6 +220,12 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
           //  recursive parser instance
           if (endBoundaryHit || newSectionBoundaryHit)
           {
+            if (sectionIndex++ === 0)
+            {
+              temp = '';
+              continue;
+            }
+
             // Calls the recursive method, increments the index
             //  and then clears the buffer
             if (temp.trim() !== '') {
@@ -260,8 +269,17 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
           break;
       }
     });
-  } else if (insertSection)
+  }
+
+  // Checks if we need to insert the section, if so we will remove all the scripts
+  //  from the section, if it is html or text
+  if (insertSection) {
+    if (
+      resultSection.e_Type === EmailContentType.TextHTML ||
+      resultSection.e_Type === EmailContentType.TextPlain 
+    ) resultSection.e_Content = resultSection.e_Content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     target.e_Sections.push(resultSection);
+  }
 };
 
 export const parse = (raw: string): Promise<Email> => {
@@ -269,7 +287,8 @@ export const parse = (raw: string): Promise<Email> => {
     try {
       let result: Email = new Email();
       let start: number = Date.now();
-    
+
+      // Cleans the message and proceeds with parsing
       const cleaned: string = raw.replace(/ +(?= )/g, '').replace(/\t/g, ' ');
       await recursiveParse(cleaned, result, 0);
   

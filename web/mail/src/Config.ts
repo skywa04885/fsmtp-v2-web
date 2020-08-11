@@ -1,6 +1,6 @@
 export default class Config
 {
-  public static host: string = 'localhost';
+  public static host: string = '192.168.2.11';
   public static method: string = 'http';
   public static defaultHeaders: any = {
     'Accept-Version': '1.0.0',

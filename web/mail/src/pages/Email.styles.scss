@@ -31,6 +31,7 @@
         flex-grow: 1;
         overflow: hidden;
         border-radius: $borderRadius;
+        font-family: sans-serif;
         background-color: #fff;
       }
     }
@@ -47,8 +48,8 @@
         margin-right: 1rem;
 
         & > svg {
-          width: 2.5rem;
-          height: 2.5rem;
+          width: 2rem;
+          height: 2rem;
           fill: #222222;
         }
       }
@@ -59,25 +60,26 @@
 
         & > ul {
           & > li {
+            display: inline-block;
 
             &:not(:last-child) {
-              margin-bottom: 0.2rem;
+              margin-right: 0.4rem;
             }
             
             & > button {
-              background-color: map-get($colors, primary);
-              border: none;
-              color: #f2f2f2;
-              padding: 0.3rem 0.7rem;
-              width: 100%;
-              border-radius: $borderRadius;
+              appearance: none;
+              background: none;
               cursor: pointer;
-              font-size: 0.8rem;
-              font-weight: normal;
+              border: none;
+              color: #323232;
               transition: all .08s;
-
+              background-color: #b6b6b6;
+              padding: 0.1rem 0.5rem;
+              border-radius: $borderRadius;
+              border: 1px solid #8a8a8a;
+    
               &:hover {
-                background-color: #222222;
+                box-shadow: 1px 1px 2px rgba(#000, 0.2);;
               }
             }
           }
@@ -95,9 +97,28 @@
           margin-right: 0.5rem;
         }
 
+        & > div {
+          display: block;
+          height: 0.2rem;
+          width: 100%;
+        }
+
         & > hr {
           border: none;
           border-bottom: 1px solid #b6b6b6;
+        }
+
+        & > p {
+          color: map-get($colors, primary);
+          display: inline-block;
+          font-size: 0.8rem;
+
+          & > a {
+            &:hover {
+              text-decoration: underline;
+              cursor: pointer;
+            }
+          }
         }
   
         & > .email__content__address-list {
