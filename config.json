@@ -20,6 +20,10 @@
       "keyspace": "fannst",
       "username": "cassandra",
       "password": "cassandra"
+    },
+    "redis": {
+      "host": "192.168.2.11",
+      "port": 6379
     }
   }
 }

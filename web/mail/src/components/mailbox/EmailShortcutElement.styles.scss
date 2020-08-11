@@ -28,12 +28,10 @@
   
     & > .email-shortcut-elem__left {
       margin-right: 1rem;
-      max-width: 180px;
-      width: 100%;
-  
+      display: flex;
+      align-items: center;
+
       & > .email-shortcut-elem__left__cb {
-        display: inline-block;
-        vertical-align: middle;
         margin-right: 0.4rem;
 
         & > input {
@@ -57,11 +55,13 @@
       }
 
       & > p {
-        display: inline-block;
-        vertical-align: middle;
+        flex-grow: 1;
         font-size: 0.8rem;
         color: map-get($colors, primary);
         font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   
@@ -69,7 +69,7 @@
       flex-grow: 1;
   
       & > p {
-        max-width: 500px;
+        max-width: 40vw;
         user-select: none;
         pointer-events: none;
         white-space: nowrap;

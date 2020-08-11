@@ -2,7 +2,7 @@ import restify from 'restify';
 import { readConfig } from '../../helpers/config.helper';
 import { Logger, LoggerLevel } from '../../logger';
 import { Routes } from './routes/index';
-import { Cassandra } from '../../helpers/database.helper';
+import { Cassandra, Redis } from '../../helpers/database.helper';
 import cors from 'restify-cors-middleware';
 
 const CONFIG: any = readConfig();
@@ -13,6 +13,7 @@ const logger: Logger = new Logger(LoggerLevel.Info, 'Mailboxes');
 const server: restify.Server = restify.createServer();
 
 Cassandra.connect(CONFIG.global.cassandra);
+Redis.connect(CONFIG.global.redis);
 
 const corsMiddleware = cors({
   origins: ['*'],

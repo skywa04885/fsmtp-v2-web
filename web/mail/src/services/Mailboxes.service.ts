@@ -4,34 +4,49 @@ import Axios from 'axios';
 import { Mailbox } from '../models/Mailbox.model';
 import { AccountService } from './Accounts.service';
 import { EmailShortcut } from '../models/EmailShortcut.model';
+import { MailboxStatus } from '../models/MailboxStatus.model';
 
 export class MailboxesService {
   public static port: number = 4002;
 
+  public static gatherMailboxStats = (mailboxes: Mailbox[]): Promise<MailboxStatus[]> => {
+    return new Promise<MailboxStatus[]>((resolve, reject) => {
+      setTimeout(() => {
+        const url: string = Config.buildURL('/get/mailboxes/status', MailboxesService.port);
+        const options: any = {
+          headers: Object.assign(Config.defaultHeaders, {
+            'Authorization': AccountService.buildBearer(),
+            'Mailboxes': mailboxes.map(mailbox => mailbox.e_MailboxPath).join(',')
+          })
+        };
+  
+        Axios.get(url, options).then(response => {
+          if (response.status !== 200)
+            reject(new Error(`${response.status}: ${response.statusText}`));
+  
+          resolve(response.data.map((rawStatus: any) => MailboxStatus.fromMap(rawStatus)));
+        }).catch(err => reject(err));
+      }, 200);
+    });
+  };
+
   public static gatherMailboxes = (): Promise<Mailbox[]> => {
     return new Promise<Mailbox[]>((resolve, reject) => {
-      // Prepares the data for axios, like the headers
-      const url: string = Config.buildURL('/get/mailboxes', MailboxesService.port);
-      const options: any = {
-        headers: Object.assign(Config.defaultHeaders, {
-          'Authorization': AccountService.buildBearer()
-        })
-      };
-
-      // Performs the axios request, and checks for errors
-      //  if none just parse the result and return it
-      Axios.get(url, options).then(response => {
-        // Checks if the request failed, if so just quit
-        if (response.status !== 200)
-          reject(new Error(`${response.status}: ${response.statusText}`));
-        
-        // Parses the response data
-        let result: Mailbox[] = [];
-        response.data.forEach((rawMailbox: any) => {
-          result.push(Mailbox.fromMap(rawMailbox));
-        });
-        resolve(result);
-      }).catch(err => reject(err));
+      setTimeout(() => {
+        const url: string = Config.buildURL('/get/mailboxes', MailboxesService.port);
+        const options: any = {
+          headers: Object.assign(Config.defaultHeaders, {
+            'Authorization': AccountService.buildBearer()
+          })
+        };
+  
+        Axios.get(url, options).then(response => {
+          if (response.status !== 200)
+            reject(new Error(`${response.status}: ${response.statusText}`));
+  
+          resolve(response.data.map((rawMailbox: any) => Mailbox.fromMap(rawMailbox)))
+        }).catch(err => reject(err));
+      }, 200);
     });
   };
 
@@ -41,7 +56,6 @@ export class MailboxesService {
       const from = page * 50;
       const to = from + 50;
   
-      // Prepares the data for axios, like the headers and url
       const url: string = Config.buildURL('/get/content', MailboxesService.port);
       const options: any = {
         headers: Object.assign(Config.defaultHeaders, {
@@ -52,27 +66,17 @@ export class MailboxesService {
         })
       };
 
-      // Performs the axios request, checks for errors
-      //  and parses the response after that
       Axios.get(url, options).then(response => {
-        // Checks if the request failed, if so just return
         if (response.status !== 200)
           reject(new Error(`${response.status}: ${response.statusText}`));
 
-        // Parses the response data
-        let result: EmailShortcut[] = [];
-        response.data.forEach((rawShortcut: any) => {
-          result.push(EmailShortcut.fromMap(rawShortcut));
-        });
-        resolve(result);
+        resolve(response.data.map((rawShortcut: any) => EmailShortcut.fromMap(rawShortcut)));
       }).catch(err => reject(err));
     });
   };
 
   public static getEmail = (bucket: number, uuid: string): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
-      // Preppares the data for axios, like the headers and url
-      //  we will send custom headers to specify which email we want
       const url: string = Config.buildURL('/get/email', MailboxesService.port);
       const options: any = {
         headers: Object.assign(Config.defaultHeaders, {
@@ -82,10 +86,7 @@ export class MailboxesService {
         })
       };
 
-      // Sends the request, and returns the string.. if this
-      //  fails we throw an error
       Axios.get(url, options).then(response => {
-        // Checks if the status is 200
         if (response.status !== 200)
           reject(new Error(`${response.status}: ${response.statusText}`));
         else resolve(response.data);

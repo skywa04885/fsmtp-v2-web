@@ -7,12 +7,12 @@ import { Email, EmailAddress, EmailContentType } from '../models/Email.model';
 import './Email.styles.scss';
 import { time } from 'console';
 import { NotImplementedError } from 'restify-errors';
+import { ToolbarButton } from '../components/nav/Toolbar.component';
+import { throws } from 'assert';
+import Config from '../Config';
 
 interface EmailPageProps {
-  bucket: number,
-  domain: string,
-  ownersUuid: string,
-  emailUuid: string
+  setToolbar: (buttons: ToolbarButton[]) => {}
 }
 
 export default class EmailPage extends React.Component<any, any> {
@@ -32,9 +32,30 @@ export default class EmailPage extends React.Component<any, any> {
 
   public componentDidMount = async () => {
     const { bucket, uuid } = this.props.match.params;
+    const { setToolbar, history } = this.props;
+
+    setToolbar([
+      {
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>,
+        title: 'Go back to mailbox',
+        key: 'email_back_to_mailbox',
+        callback: this.goBack
+      },
+      {
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>,
+        title: 'Move to trash',
+        key: 'email_mv_trash'
+      },
+      {
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>,
+        title: 'Archive message',
+        key: 'email_archive'
+      }
+    ]);
 
     MailboxesService.getEmail(bucket, uuid).then(data => {
       parse(data).then(email => {
+        Config.updateTitle(email.e_Subject ? email.e_Subject : uuid);
         this.setState({
           email
         });
@@ -43,7 +64,15 @@ export default class EmailPage extends React.Component<any, any> {
           error: err
         });
       })
+    }).catch(err => {
+      console.log(`Could not load message: ${err.toString()}`);
+      history.goBack();
     });
+  };
+
+  public goBack = () => {
+    const { history } = this.props;
+    history.goBack();
   };
 
   public renderAddressList = (list?: EmailAddress[]): any => {

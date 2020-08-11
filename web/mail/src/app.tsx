@@ -6,13 +6,15 @@ import { AccountService } from './services/Accounts.service';
 import MailboxPage from './pages/Mailbox.page';
 import Header from './components/nav/Header.component';
 import Splashscreen from './components/misc/Splashscreen.component';
-import { Toolbar, ToolbarState } from './components/nav/Toolbar.component';
+import { Toolbar, ToolbarButton } from './components/nav/Toolbar.component';
 import Loader from './components/misc/Loader.component';
 import { Mailbox } from './models/Mailbox.model';
-
-import './app.scss';
 import { MailboxesService } from './services/Mailboxes.service';
 import EmailPage from './pages/Email.page';
+import Compose from './components/Compose.component';
+
+import './app.scss';
+import { MailboxStatus } from './models/MailboxStatus.model';
 
 const StartupSound =  require('./static/startup.mp3');
 
@@ -23,9 +25,12 @@ class App extends React.Component {
     loading: boolean,
     loaderMessage: string,
     mailboxes: Mailbox[],
+    mailboxStats: MailboxStatus[],
     ready: boolean
   };
 
+  private composeMenu: React.RefObject<Compose> = React.createRef<Compose>();
+  private toolbar: React.RefObject<Toolbar> = React.createRef<Toolbar>();
   private loader: React.RefObject<Loader> = React.createRef<Loader>();
   private mailboxPage: React.RefObject<MailboxPage> = React.createRef<MailboxPage>();
 
@@ -36,6 +41,7 @@ class App extends React.Component {
       loading: true,
       loaderMessage: 'Loading page',
       mailboxes: [],
+      mailboxStats: [],
       ready: false
     };
   }
@@ -82,16 +88,18 @@ class App extends React.Component {
   public refresh = (): void => {
     this.loader?.current?.show('Loading mailboxes');
 
-    setTimeout(() => {
-      MailboxesService.gatherMailboxes().then(mailboxes => {
+    MailboxesService.gatherMailboxes().then(mailboxes => {
+      this.loader?.current?.show('Loading mailbox statistics');
+      MailboxesService.gatherMailboxStats(mailboxes).then(mailboxStats => {
         this.setState({
           mailboxes,
+          mailboxStats,
           ready: true
         });
 
         this.loader?.current?.hide();
       }).catch(err => {});
-    }, 200);
+    }).catch(err => {});
   };
 
   /**
@@ -105,7 +113,7 @@ class App extends React.Component {
    * Renders the page, and if loading the splashscreen
    */
   public render = (): any => {
-    const { loading, loaderMessage, mailboxes, ready } = this.state;
+    const { loading, loaderMessage, mailboxes, mailboxStats, ready } = this.state;
 
     if (loading) return <Splashscreen message={loaderMessage} />
 
@@ -124,24 +132,46 @@ class App extends React.Component {
                     return (
                       <li key={mailbox.e_MailboxPath}>
                         <NavLink
+                          title={ mailbox.e_Bucket + ':' + mailbox.e_Domain + ':' + mailbox.e_MailboxPath}
                           className="app__sidebar__folder"
                           activeClassName="app__sidebar__folder-active"
                           to={"/mailbox/" + mailbox.e_MailboxPath}
                         >
                           {mailbox.getIcon()}
-                          {mailbox.getName()}
+                          {mailbox.getName()} ({ mailboxStats.find((stat, n) => stat.s_Path === mailbox.e_MailboxPath)?.s_Total })
                         </NavLink>
                       </li>
                     );
                   })}
                 </ul>
               </li>
+              <li className="app__sidebar__ul__li">
+                <p className="app__sidebar__ul__li__title">
+                  <strong>Udef: </strong>
+                  <div>
+                    <button title="Add user defined folder" className="app__sidebar__ul__li__title-btn" type="button">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                      >
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </p>
+              </li>
             </ul>
           </div>
           <div className="app__wrapper">
+            <Compose ref={this.composeMenu} />
             <Loader ref={this.loader} />
             <Header toggleSidebar={this.toggleSidebar} />
-            <Toolbar onRefresh={() => this.mailboxPage?.current?.refresh()} state={ToolbarState.Default} />
+            <Toolbar
+              ref={this.toolbar}
+            />
             <div className="app__content">
               {!ready ? null : (
                 <Switch>
@@ -151,12 +181,20 @@ class App extends React.Component {
                         ref={this.mailboxPage}
                         history={props.history}
                         match={props.match}
-                        showLoader={(message: string) => this.loader?.current?.show(message)}
-                        hideLoader={() => this.loader?.current?.hide()}
+                        setToolbar={this.toolbar?.current?.setToolbar}
+                        onCompose={this.composeMenu.current?.show}
                       />
                     );
                   }} />
-                  <Route path="/mail/:bucket/:uuid" component={EmailPage} />
+                  <Route path="/mail/:bucket/:uuid" component={(props: any) => {
+                    return (
+                      <EmailPage
+                        match={props.match}
+                        history={props.history}
+                        setToolbar={this.toolbar?.current?.setToolbar}
+                      />
+                    );
+                  }}/>
                   <Redirect to="/mailbox/INBOX" />
                 </Switch>
               )}

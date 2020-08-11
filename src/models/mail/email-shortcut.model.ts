@@ -1,6 +1,15 @@
 import cassandraDriver from 'cassandra-driver';
 import { Cassandra } from '../../helpers/database.helper';
 
+export const EmailFlags = {
+  Seen: 1,
+  Answered: 2,
+  Flagged: 4,
+  Deleted: 8,
+  Draft: 16,
+  Recent: 32
+};
+
 export class EmailShortcut {
   public e_Domain: string;
   public e_Subject: string;

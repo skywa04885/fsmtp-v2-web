@@ -89,6 +89,34 @@ class Mailbox {
     });
   };
 
+  public static get = (
+    e_Bucket: number, e_Domain: string, 
+    e_UUID: cassandraDriver.types.TimeUuid, 
+    e_MailboxPath: string
+  ): Promise<Mailbox> => {
+    return new Promise<Mailbox>((resolve, reject) => {
+      const query: string = `SELECT e_mailbox_stand, e_message_count, e_flags, e_subscribed
+      FROM ${Cassandra.keyspace}.mailboxes 
+      WHERE e_bucket=? AND e_domain=? AND e_uuid=? AND e_mailbox_path=? ALLOW FILTERING`;
+
+      Cassandra.client.execute(query, [
+        e_Bucket, e_Domain, e_UUID, e_MailboxPath
+      ], {
+        prepare: true
+      }).then(res => {
+        if (res.rows.length <= 0) resolve(undefined);
+        else {
+          let result: Mailbox = Mailbox.fromMap(res.rows[0]);
+          result.e_Bucket = e_Bucket;
+          result.e_UUID = e_UUID;
+          result.e_MailboxPath = e_MailboxPath;
+          result.e_Domain = e_Domain;
+          resolve(result);
+        }
+      });
+    });
+  };
+
   public save = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
       const query: string = `INSERT INTO ${Cassandra.keyspace}.mailboxes (

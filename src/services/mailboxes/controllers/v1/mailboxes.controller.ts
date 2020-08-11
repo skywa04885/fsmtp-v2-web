@@ -1,12 +1,13 @@
 import restify from 'restify';
 import errors from 'restify-errors';
-import cassandraDriver from 'cassandra-driver';
+import cassandraDriver, { auth } from 'cassandra-driver';
 import { Bearer } from '../../../../helpers/bearer.helper';
 import { Mailbox } from '../../../../models/mail/mailbox.model';
 import { validateRequest } from '../../../../helpers/validation.helper';
 import { EmailShortcut } from '../../../../models/mail/email-shortcut.model';
 import { reject } from 'async';
 import { EmailRaw } from '../../../../models/mail/email-raw.model';
+import { MailboxStatus } from '../../../../models/mail/mailbox-status.model';
 
 export namespace Controllers
 {
@@ -85,7 +86,13 @@ export namespace Controllers
 
     if (!req.headers['email-uuid'])
       return next(new errors.InvalidHeaderError('Email-UUID header is required'));
-    else emailUuid = cassandraDriver.types.TimeUuid.fromString(req.headers['email-uuid'].toString());
+    else {
+      try {
+        emailUuid = cassandraDriver.types.TimeUuid.fromString(req.headers['email-uuid'].toString());
+      } catch (err) {
+        return next(new errors.InvalidHeaderError('Email-UUID header is invalid'));
+      }
+    }
 
     Bearer.authRequest(req, res, next).then(authObj => {
       EmailRaw.get(bucket, authObj.domain, authObj.uuid, emailUuid).then(email => {
@@ -93,6 +100,39 @@ export namespace Controllers
         else res.send(200, email.e_Content, {
           'Content-Type': 'text/plain'
         });
+      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+    }).catch(err => {});
+  };
+
+  export const GET_MailboxStats = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+    let mailboxes: string[] = [];
+
+    if (!req.headers['mailboxes'])
+      return next(new errors.InvalidHeaderError('Mailboxes header is required'));
+    else mailboxes = req.headers['mailboxes'].toString().split(',');
+
+    Bearer.authRequest(req, res, next).then(authObj => {
+      let tasks: any[] = [];
+
+      mailboxes.forEach(mailbox => {
+        tasks.push(MailboxStatus.get(authObj.bucket, authObj.domain, authObj.uuid, mailbox));
+      });
+
+      Promise.all(tasks).then(results => {
+        res.json(results.map((result: MailboxStatus) => {
+          return {
+            s_unseen: result.s_Unseen,
+            s_next_uid: result.s_NextUID,
+            s_recent: result.s_Recent,
+            s_total: result.s_Total,
+            s_flags: result.s_Flags,
+            s_perma_flags: result.s_PermaFlags,
+            s_path: result.s_MailboxPath
+          };
+        }))
       }).catch(err => next(new errors.InternalServerError({}, err.toString())));
     }).catch(err => {});
   };
