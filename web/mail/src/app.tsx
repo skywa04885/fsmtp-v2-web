@@ -125,7 +125,20 @@ class App extends React.Component {
               <li className="app__sidebar__ul__li">
                 {/* The folders */}
                 <p className="app__sidebar__ul__li__title">
-                  <strong>Folders: </strong>
+                  <strong>Folders:</strong>
+                  <div>
+                    <button title="Add user defined folder" className="app__sidebar__ul__li__title-btn" type="button">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                      >
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                      </svg>
+                    </button>
+                  </div>
                 </p>
                 <ul className="app__sidebar__ul__li__folders">
                   {mailboxes.map((mailbox: Mailbox) => {
@@ -145,28 +158,41 @@ class App extends React.Component {
                   })}
                 </ul>
               </li>
+              <hr />
               <li className="app__sidebar__ul__li">
+                {/* Settings etcetera */}
                 <p className="app__sidebar__ul__li__title">
-                  <strong>Udef: </strong>
-                  <div>
-                    <button title="Add user defined folder" className="app__sidebar__ul__li__title-btn" type="button">
+                  <strong>Other:</strong>
+                </p>
+                <ul className="app__sidebar__ul__li__folders">
+                  <li>
+                    <NavLink
+                      to="/other/devinfo"
+                      className="app__sidebar__folder"
+                      activeClassName="app__sidebar__folder-active"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         height="24"
                         viewBox="0 0 24 24"
                         width="24"
                       >
-                        <path d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                          <path d="M0 0h24v24H0z" fill="none"/>
+                          <path d="M7 5h10v2h2V3c0-1.1-.9-1.99-2-1.99L7 1c-1.1 0-2 .9-2 2v4h2V5zm8.41 11.59L20 12l-4.59-4.59L14 8.83 17.17 12 14 15.17l1.41 1.42zM10 15.17L6.83 12 10 8.83 8.59 7.41 4 12l4.59 4.59L10 15.17zM17 19H7v-2H5v4c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4h-2v2z"/>
                       </svg>
-                    </button>
-                  </div>
-                </p>
+                      Developer Info
+                    </NavLink>
+                  </li>
+                </ul>
               </li>
             </ul>
           </div>
           <div className="app__wrapper">
-            <Compose ref={this.composeMenu} />
+            <Compose
+              showLoader={this.loader?.current?.show}
+              hideLoader={this.loader?.current?.hide}
+              ref={this.composeMenu}
+            />
             <Loader ref={this.loader} />
             <Header toggleSidebar={this.toggleSidebar} />
             <Toolbar

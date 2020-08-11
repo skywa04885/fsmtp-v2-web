@@ -4,6 +4,7 @@ import cnames from 'classnames';
 
 import './Compose.styles.scss';
 import { AccountService } from '../services/Accounts.service';
+import { MailerService } from '../services/Mailer.service';
 
 enum ComposeState {
   Hidden,
@@ -13,7 +14,8 @@ enum ComposeState {
 }
 
 interface ComposeProps {
-
+  showLoader: (message: string) => {},
+  hideLoader: () => {}
 }
 
 export default class Compose extends React.Component<any, any> {
@@ -93,6 +95,18 @@ export default class Compose extends React.Component<any, any> {
   public onToChange = (e: any) => {
     this.setState({
       to: e.target.value
+    });
+  };
+
+  public onSubmit = () => {
+    const { subject, message, to } = this.state;
+
+    if (!subject || message.length <= 0 || !to) return;
+
+    MailerService.sendMail(subject, to, message.replace(/<[^>]*>?/gm, ''), message).then(() => {
+
+    }).catch(err => {
+
     });
   };
 
@@ -215,7 +229,7 @@ export default class Compose extends React.Component<any, any> {
           </div>
         </div>
         <div className="compose__buttons">
-          <button type="button" className="compose__buttons__btn">Transmit</button>
+          <button type="button" className="compose__buttons__btn" onClick={this.onSubmit}>Transmit</button>
         </div>
       </div>
     );

@@ -17,8 +17,6 @@ export namespace Controllers
     next: restify.Next
   ) => {
     Bearer.authRequest(req, res, next).then(authObject => {
-      // Gets the full account, and then we will send it over the network
-      //  to the client
       Account.get(authObject.bucket, authObject.domain, authObject.uuid).then(account => {
         res.json({
           a_username: account.a_Username,

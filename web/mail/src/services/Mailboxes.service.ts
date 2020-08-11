@@ -22,7 +22,7 @@ export class MailboxesService {
   
         Axios.get(url, options).then(response => {
           if (response.status !== 200)
-            reject(new Error(`${response.status}: ${response.statusText}`));
+            return reject(new Error(`${response.status}: ${response.statusText}`));
   
           resolve(response.data.map((rawStatus: any) => MailboxStatus.fromMap(rawStatus)));
         }).catch(err => reject(err));
@@ -42,7 +42,7 @@ export class MailboxesService {
   
         Axios.get(url, options).then(response => {
           if (response.status !== 200)
-            reject(new Error(`${response.status}: ${response.statusText}`));
+            return reject(new Error(`${response.status}: ${response.statusText}`));
   
           resolve(response.data.map((rawMailbox: any) => Mailbox.fromMap(rawMailbox)))
         }).catch(err => reject(err));
@@ -52,26 +52,28 @@ export class MailboxesService {
 
   public static gatherContents = (mailbox: string, page: number): Promise<EmailShortcut[]> => {
     return new Promise<EmailShortcut[]>((resolve, reject) => {
-      // Calculates the pagination index, each page is 50 next
-      const from = page * 50;
-      const to = from + 50;
-  
-      const url: string = Config.buildURL('/get/content', MailboxesService.port);
-      const options: any = {
-        headers: Object.assign(Config.defaultHeaders, {
-          'Authorization': AccountService.buildBearer(),
-          'From': from,
-          'To': to,
-          'Mailbox': mailbox
-        })
-      };
+      setTimeout(() => {
+        // Calculates the pagination index, each page is 50 next
+        const from = page * 50;
+        const to = from + 50;
+    
+        const url: string = Config.buildURL('/get/content', MailboxesService.port);
+        const options: any = {
+          headers: Object.assign(Config.defaultHeaders, {
+            'Authorization': AccountService.buildBearer(),
+            'From': from,
+            'To': to,
+            'Mailbox': mailbox
+          })
+        };
 
-      Axios.get(url, options).then(response => {
-        if (response.status !== 200)
-          reject(new Error(`${response.status}: ${response.statusText}`));
+        Axios.get(url, options).then(response => {
+          if (response.status !== 200)
+            return reject(new Error(`${response.status}: ${response.statusText}`));
 
-        resolve(response.data.map((rawShortcut: any) => EmailShortcut.fromMap(rawShortcut)));
-      }).catch(err => reject(err));
+          resolve(response.data.map((rawShortcut: any) => EmailShortcut.fromMap(rawShortcut)));
+        }).catch(err => reject(err));
+      }, 200);
     });
   };
 
@@ -88,8 +90,9 @@ export class MailboxesService {
 
       Axios.get(url, options).then(response => {
         if (response.status !== 200)
-          reject(new Error(`${response.status}: ${response.statusText}`));
-        else resolve(response.data);
+          return reject(new Error(`${response.status}: ${response.statusText}`));
+        
+        resolve(response.data);
       }).catch(err => reject(err));
     });
   };

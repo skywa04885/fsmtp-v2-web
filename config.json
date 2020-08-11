@@ -10,6 +10,12 @@
     "mailboxes": {
       "port": 4002,
       "address": "0.0.0.0"
+    },
+    "mailer": {
+      "port": 4003,
+      "address": "0.0.0.0",
+      "smtp_server": "smtp.fannst.nl",
+      "smtp_port": 25
     }
   },
   "global": {

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import Axios from 'axios';
 import cookie from 'react-cookies';
 import { Account } from '../models/Account.model';
 import Config from '../Config';
@@ -51,7 +51,7 @@ export class AccountService {
       // Sends the axios request, after that we check if the request response
       //  code returned anything else but 200, if the request succeeded we parse
       //  it from the map to an valid account
-      axios.get(url, options).then(response => {
+      Axios.get(url, options).then(response => {
         if (response.status !== 200)
           reject(new Error(`${response.status}: ${response.statusText}`));
         else resolve(Account.fromMap(response.data));

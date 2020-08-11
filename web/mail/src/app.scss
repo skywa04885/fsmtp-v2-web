@@ -68,6 +68,12 @@ body, html {
 		border-right: 1px solid rgba(#fff, 0.2);
 
 		& > .app__sidebar__ul {
+			& > hr {
+				margin-top: 1rem;
+				border: none;
+				border-bottom: 1px solid rgba(#fff, 0.1);
+			}
+
 			& > .app__sidebar__ul__li {
 				& > .app__sidebar__ul__li__title {
 					margin: 1rem;
