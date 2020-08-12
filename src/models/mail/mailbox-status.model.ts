@@ -55,7 +55,7 @@ export class MailboxStatus {
     s_Bucket: number, s_Domain: string, 
     s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string
   ): string => {
-    return `${s_Bucket}:${s_Domain}:${s_UUID.toString()}:${s_MailboxPath}`;
+    return `${s_Bucket}:${s_Domain}:${s_UUID.getDatePrecision().date.getTime()}:${s_MailboxPath}`;
   }
 
   public static restoreFromCassandra = (

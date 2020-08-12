@@ -16,6 +16,10 @@ export namespace Routes
       {version: '1.0.0', handler: MailboxesControllers.GET_GetEmail}
     ]));
 
+    server.post('/email/move', restify.plugins.conditionalHandler([
+      {version: '1.0.0', handler: MailboxesControllers.POST_MoveEmail}
+    ]));
+
     server.get('/get/mailboxes/status', restify.plugins.conditionalHandler([
       {version: '1.0.0', handler: MailboxesControllers.GET_MailboxStats}
     ]));

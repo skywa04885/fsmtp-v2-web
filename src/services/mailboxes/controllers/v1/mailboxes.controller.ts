@@ -64,7 +64,8 @@ export namespace Controllers
             e_flags: shortcut.e_Flags,
             e_bucket: shortcut.e_Bucket,
             e_size_octets: shortcut.e_SizeOctets,
-            e_uid: shortcut.e_UID
+            e_uid: shortcut.e_UID,
+            e_from: shortcut.e_From
           };
         }));
         // -> End EmailShortcut.gatherAll()
@@ -104,6 +105,13 @@ export namespace Controllers
     }).catch(err => {});
   };
 
+  export const POST_FlagEmail = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+
+  };
+
   export const GET_MailboxStats = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next
@@ -135,5 +143,27 @@ export namespace Controllers
         }))
       }).catch(err => next(new errors.InternalServerError({}, err.toString())));
     }).catch(err => {});
+  };
+
+  export const POST_MoveEmail = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+    if (!validateRequest(req, res, next, {
+      properties: {
+        mailbox: {
+          type: 'string',
+          required: true
+        },
+        mailbox_target: {
+          type: 'string',
+          required: true
+        },
+        email_uuid: {
+          type: 'string',
+          required: true
+        }
+      }
+    })) return;
   };
 }

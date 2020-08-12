@@ -30,6 +30,8 @@
       margin-right: 1rem;
       display: flex;
       align-items: center;
+      max-width: 200px;
+      width: 100%;
 
       & > .email-shortcut-elem__left__cb {
         margin-right: 0.4rem;

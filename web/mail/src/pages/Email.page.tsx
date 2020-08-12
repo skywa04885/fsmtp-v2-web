@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { AnchorHTMLAttributes } from 'react';
 
 import { MailboxesService } from '../services/Mailboxes.service';
 import { parse } from '../parsers/MIMEParser.parser';
@@ -18,7 +18,8 @@ interface EmailPageProps {
 export default class EmailPage extends React.Component<any, any> {
   public state: {
     error?: string,
-    email?: Email
+    email?: Email,
+    raw?: string
   };
   
   public constructor(props: EmailPageProps) {
@@ -26,7 +27,8 @@ export default class EmailPage extends React.Component<any, any> {
 
     this.state = {
       error: undefined,
-      email: undefined
+      email: undefined,
+      raw: undefined
     };
   }
 
@@ -57,7 +59,8 @@ export default class EmailPage extends React.Component<any, any> {
       parse(data).then(email => {
         Config.updateTitle(email.e_Subject ? email.e_Subject : uuid);
         this.setState({
-          email
+          email,
+          raw: data
         });
       }).catch(err => {
         this.setState({
@@ -96,6 +99,28 @@ export default class EmailPage extends React.Component<any, any> {
         })}
       </ul>
     );
+  };
+
+  public download = (): void => {
+    const { raw, email } = this.state;
+    
+    if (!raw) return;
+
+    let blob = new Blob([raw], {
+      type: 'text/eml'
+    });
+
+    const filename: string = `${email?.e_Subject}.eml`;
+    if (!!window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveBlob(blob, filename);
+    } else {
+      let elem: HTMLAnchorElement = window.document.createElement('a');
+      elem.href = window.URL.createObjectURL(blob);
+      elem.download = filename;
+      document.body.appendChild(elem);
+      elem.click();
+      document.body.removeChild(elem);
+    }
   };
 
   public onFrameLoad = (e: any) => {
@@ -189,6 +214,9 @@ export default class EmailPage extends React.Component<any, any> {
                   </li>
                   <li>
                     <button type="button">Details</button>
+                  </li>
+                  <li>
+                    <button type="button" onClick={this.download}>Download</button>
                   </li>
                 </ul>
               </div>

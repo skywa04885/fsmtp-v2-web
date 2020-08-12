@@ -21,6 +21,7 @@ export class EmailShortcut {
   public e_Bucket: number;
   public e_Mailbox: string;
   public e_SizeOctets: number;
+  public e_From: string;
 
   public constructor(data: {
     e_Domain: string,
@@ -32,7 +33,8 @@ export class EmailShortcut {
     e_Flags: number,
     e_Bucket: number,
     e_Mailbox: string,
-    e_SizeOctets: number
+    e_SizeOctets: number,
+    e_From: string
   }) {
     this.e_Domain = data.e_Domain;
     this.e_Subject = data.e_Subject;
@@ -44,6 +46,7 @@ export class EmailShortcut {
     this.e_Bucket = data.e_Bucket;
     this.e_Mailbox = data.e_Mailbox;
     this.e_SizeOctets = data.e_SizeOctets;
+    this.e_From = data.e_From;
   }
 
   public static fromMap = (map: any) => {
@@ -57,7 +60,93 @@ export class EmailShortcut {
       e_Flags: parseInt(map['e_flags']),
       e_Bucket: parseInt(map['e_bucket']),
       e_Mailbox: map['e_mailbox'],
-      e_SizeOctets: parseInt(map['e_size_octets'])
+      e_SizeOctets: parseInt(map['e_size_octets']),
+      e_From: map['e_from']
+    });
+  };
+
+  public static setFlag = (
+    e_Domain: string, e_OwnersUUID: cassandraDriver.types.TimeUuid,
+    e_Mailbox: string, e_EmailUUID: cassandraDriver.types.TimeUuid,
+    e_Flag: number
+  ): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+
+      // Gets the previous flags so we can then OR the new ones to
+      //  it, because we want to keep the previous ones too
+
+      let query: string = `SELECT e_flags FROM ${Cassandra.keyspace}.email_shortcuts
+      WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`;
+
+      Cassandra.client.execute(query, [
+        e_Domain, e_OwnersUUID, e_Mailbox, e_EmailUUID
+      ], {
+        prepare: true
+      }).then(res => {
+        if (res.rows.length <= 0) reject(new Error('Could not find message'));
+
+        // OR's the flags, and updates the record in apache cassandra, i know
+        //  this is not very efficient, but i do not care.
+
+        let flags: number = res.rows[0]['e_flags'];
+        flags |= e_Flag;
+
+        query = `UPDATE ${Cassandra.keyspace}.email_shortcuts
+        SET e_flags=?
+        WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`;
+
+        Cassandra.client.execute(query, [
+          flags, e_Domain, e_OwnersUUID, e_Mailbox, e_EmailUUID
+        ], {
+          prepare: true
+        }).then(() => resolve()).catch(err => reject(err));
+      }).catch(err => reject(err));
+    });
+  };
+
+	public static move = (
+		e_Domain: string, e_OwnersUUID: cassandraDriver.types.TimeUuid,
+		e_Mailbox: string, e_EmailUUID: cassandraDriver.types.TimeUuid,
+		targetMailbox: string
+	): Promise<null> => {
+		return new Promise<null>((resolve, reject) => {
+			const query: string = `SELECT e_flags, e_subject, e_preview, e_uid, e_size_octets, e_from,
+			e_bucket FROM ${Cassandra.keyspace}.email_shortcuts
+			WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`;
+
+      const deleteQuery: string = `DELETE FROM ${Cassandra.keyspace}.email_shortcuts
+      WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`;
+
+      Cassandra.client.batch([
+        {
+          query: query,
+          params: [ e_Domain, e_OwnersUUID, e_Mailbox, e_EmailUUID ]
+        },
+        {
+          query: deleteQuery,
+          params: [ e_Domain, e_OwnersUUID, e_Mailbox, e_EmailUUID ]
+        }
+      ], {
+        prepare: true
+      }).then(resultSet => {
+        console.log(console.log(resultSet));
+      }).catch(err => reject(err));
+		});
+	}
+
+  public static delete = (
+    e_Domain: string, e_OwnersUUID: cassandraDriver.types.TimeUuid,
+    e_Mailbox: string, e_EmailUUID: cassandraDriver.types.TimeUuid
+  ): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      let query: string = `DELETE FROM ${Cassandra.keyspace}.email_shortcuts 
+      WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`;
+
+      Cassandra.client.execute(query, [
+        e_Domain, e_OwnersUUID, e_Mailbox, e_EmailUUID
+      ], {
+        prepare: true
+      }).then(() => resolve()).catch(err => reject(err));
     });
   };
 

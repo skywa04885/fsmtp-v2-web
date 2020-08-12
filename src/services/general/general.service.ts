@@ -16,5 +16,9 @@ app.get('/auth/*', (req, res, next) => {
   res.sendFile(path.join(process.cwd(), 'web', 'auth', 'build', 'index.html'));
 });
 
+app.get('/mail/*', (req, res, next) => {
+  res.sendFile(path.join(process.cwd(), 'web', 'mail', 'build', 'index.html'));
+});
+
 // Listens the server
 app.listen(PORT, () => logger.print(`Server listening on port ${PORT}`));

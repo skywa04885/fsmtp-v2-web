@@ -100,13 +100,16 @@ export default class Compose extends React.Component<any, any> {
 
   public onSubmit = () => {
     const { subject, message, to } = this.state;
+    const { showLoader, hideLoader } = this.props;
 
     if (!subject || message.length <= 0 || !to) return;
 
+    showLoader('Sending message');
     MailerService.sendMail(subject, to, message.replace(/<[^>]*>?/gm, ''), message).then(() => {
-
+      hideLoader();
+      this.hide();
     }).catch(err => {
-
+      hideLoader();
     });
   };
 

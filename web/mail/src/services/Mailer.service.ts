@@ -20,15 +20,15 @@ export class MailerService {
           subject, to, text, html
         };
   
-        // Axios.post(url, fields, options).then(response => {
-        //   if (response.status !== 200)
-        //     return reject(`${response.status}: ${response.statusText}`);
+        Axios.post(url, fields, options).then(response => {
+          if (response.status !== 200)
+            return reject(`${response.status}: ${response.statusText}`);
           
-        //   resolve();
-        // });
+          resolve();
+        });
 
         resolve();
-      }, 200);
+      }, 400);
     });
   };
 }

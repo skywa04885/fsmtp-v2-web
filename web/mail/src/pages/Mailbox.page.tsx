@@ -83,28 +83,18 @@ export default class MailboxPage extends React.Component<any, any>
           loading: false,
           shortcuts
         });
-      });
+      }).catch(err => {});
     }, 100);
   };
   
   public onClick = (bucket: number, uuid: string): void => {
     const { history } = this.props;
     history.push(`/mail/${bucket}/${uuid}`);
-
-    // const { showLoader, hideLoader } = this.props;
-    // showLoader('Loading message');
-
-    // setTimeout(() => {
-    //   MailboxesService.getEmail(bucket, uuid).then(email => {
-    //     hideLoader();
-    //   }).catch(err => {
-    //     hideLoader();
-    //   });
-    // }, 100);
   };
 
   public render = (): any => {
     const { loading, shortcuts } = this.state;
+    const { params } = this.props.match;
 
     return (
       <React.Fragment>
@@ -115,7 +105,7 @@ export default class MailboxPage extends React.Component<any, any>
             </div>
           </div>
           <ul className="mailbox__content">
-            {
+            {shortcuts.length > 0 ?
               shortcuts.map(shortcut => {
                 return (
                   <EmailShortcutElement
@@ -124,7 +114,28 @@ export default class MailboxPage extends React.Component<any, any>
                     shortcut={shortcut}
                   />
                 )
-              })
+              }) : (
+                <div className="mailbox__content-empty">
+                  <div className="mailbox__content-empty__picture">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                    >
+                      <path d="M0 0h24v24H0z" fill="none"/>
+                      <path d="M14 6l-1-2H5v17h2v-7h5l1 2h7V6h-6zm4 8h-4l-1-2H7V6h5l1 2h5v6z"/>
+                    </svg>
+                  </div>
+                  <div className="mailbox__content-empty__info">
+                    <p>
+                      <strong>Nothing here.</strong>
+                      <br />
+                      The currently selected mailbox <span>"{params.mailbox}"</span> does not contain anything.
+                    </p>
+                  </div>
+                </div>
+              )
             }
           </ul>
         </div>

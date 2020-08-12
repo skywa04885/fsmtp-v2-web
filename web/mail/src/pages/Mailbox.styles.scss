@@ -6,13 +6,55 @@
     margin: 1rem;
     border-radius: $borderRadius;
     overflow: hidden;
+
+    & > .mailbox__content-empty {
+      text-align: center;
+      background-color: rgba(#fff, .8);
+      border: 1px solid rgba(#fff, 0.5);
+      padding: 1rem;
+
+      & > .mailbox__content-empty__picture {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 1rem;
+
+        & > svg {
+          fill: #323232;
+          width: 3.8rem;
+          height: 3.8rem;
+        }
+      }
+
+      & > .mailbox__content-empty__info {
+        display: inline-block;
+        vertical-align: middle;
+        text-align: left;
+
+        & > p {
+          font-size: 0.9rem;
+          color: #555555;
+
+          & > strong {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #323232;
+          }
+
+          & > span {
+            color: map-get($colors, primary);
+            font-size: 0.8rem;
+            font-weight: bold;
+          }
+        }
+      }
+    }
   }
 
   & > .mailbox__loader {
     & > .mailbox__loader-bar {
       position: absolute;
       overflow: hidden;
-      bottom: 0;
+      top: 0;
       right: 0;
       left: 0;
       height: 0.3rem;

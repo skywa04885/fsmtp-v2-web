@@ -10,7 +10,7 @@ interface EmailShortcutElementProps {
 }
 
 export const EmailShortcutElement = (props: EmailShortcutElementProps): any => {
-  const { e_Subject, e_Preview, e_SizeOctets } = props.shortcut;
+  const { e_Subject, e_Preview, e_SizeOctets, e_From } = props.shortcut;
   const { onClick } = props;
   
   return (
@@ -20,7 +20,7 @@ export const EmailShortcutElement = (props: EmailShortcutElementProps): any => {
           <div className="email-shortcut-elem__left__cb">
             <input type="checkbox" />
           </div>
-          <p>TODO: Add from</p>
+          <p>{ e_From }</p>
         </div>
         <div className="email-shortcut-elem__middle">
           <p><strong>{ e_Subject }</strong> - { e_Preview }</p>

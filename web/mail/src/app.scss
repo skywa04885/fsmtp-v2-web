@@ -160,6 +160,8 @@ body, html {
 			position: absolute;
 			top: 7rem;
 			bottom: 0;
+			overflow-y: auto;
+			scrollbar-width: thin;
 			left: 0;
 			right: 0;
 			border-top: 1px solid rgba(#fff, 0.2);
