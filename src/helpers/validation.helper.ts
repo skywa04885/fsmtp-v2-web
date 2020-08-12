@@ -28,10 +28,13 @@ const validateRequest = (
 
   // Sends the error to the client, and returns false so we will not
   //  continue any more with the further request 
-  res.json({
-    status: false,
-    message: errorString.substr(0, errorString.length - 2)
-  });
+  console.log(errorString);
+  next(new errors.InvalidArgumentError({
+    info: {
+      status: false,
+      message: errorString.substr(0, errorString.length - 2)
+    }
+  }))
   return false;
 };
 

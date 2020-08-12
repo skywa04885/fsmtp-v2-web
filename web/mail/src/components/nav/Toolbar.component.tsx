@@ -5,7 +5,7 @@ import './Toolbar.styles.scss';
 interface ToolbarProps {}
 
 export interface ToolbarButton {
-  callback: () => {},
+  callback: any,
   icon: any,
   title: string,
   key: string
@@ -46,7 +46,7 @@ export class Toolbar extends React.Component<any, any> {
     return (
       <div className="toolbar">
         <ul className="toolbar__list">
-          {this.getElements()}
+          { this.getElements() }
         </ul>
       </div>
     );

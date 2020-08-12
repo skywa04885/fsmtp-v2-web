@@ -3,9 +3,11 @@ import React from 'react';
 import { MailboxesService } from '../services/Mailboxes.service';
 import { EmailShortcut } from '../models/EmailShortcut.model';
 import { EmailShortcutElement } from '../components/mailbox/EmailShortcutElement.component';
+import FullscreenMessage from '../components/misc/FullscreenMessage.component';
+import Config from '../Config';
+import { popup } from '..';
 
 import './Mailbox.styles.scss';
-import Config from '../Config';
 
 interface InboxPageProps {
   mailbox: string,
@@ -83,18 +85,21 @@ export default class MailboxPage extends React.Component<any, any>
           loading: false,
           shortcuts
         });
-      }).catch(err => {});
+      }).catch(err => {
+        popup.current?.showText(err.toString(), 'Could not gather mailbox contents');
+      });
     }, 100);
   };
   
   public onClick = (bucket: number, uuid: string): void => {
     const { history } = this.props;
-    history.push(`/mail/${bucket}/${uuid}`);
+    const { mailbox } = this.state;
+    history.push(`/mail/${mailbox}/${bucket}/${uuid}`);
   };
 
   public render = (): any => {
     const { loading, shortcuts } = this.state;
-    const { params } = this.props.match;
+    const { mailbox } = this.props.match.params;
 
     return (
       <React.Fragment>
@@ -115,8 +120,10 @@ export default class MailboxPage extends React.Component<any, any>
                   />
                 )
               }) : (
-                <div className="mailbox__content-empty">
-                  <div className="mailbox__content-empty__picture">
+                <FullscreenMessage
+                  title="Nothing here."
+                  message={`The current mailbox "${ mailbox }" is either empty or does not exist.`}
+                  icon={(
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       height="24"
@@ -126,15 +133,8 @@ export default class MailboxPage extends React.Component<any, any>
                       <path d="M0 0h24v24H0z" fill="none"/>
                       <path d="M14 6l-1-2H5v17h2v-7h5l1 2h7V6h-6zm4 8h-4l-1-2H7V6h5l1 2h5v6z"/>
                     </svg>
-                  </div>
-                  <div className="mailbox__content-empty__info">
-                    <p>
-                      <strong>Nothing here.</strong>
-                      <br />
-                      The currently selected mailbox <span>"{params.mailbox}"</span> does not contain anything.
-                    </p>
-                  </div>
-                </div>
+                  )}
+                />
               )
             }
           </ul>

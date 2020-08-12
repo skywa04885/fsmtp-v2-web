@@ -1,10 +1,9 @@
 @import '../../theme.scss';
 
 .loader {
-  z-index: 1000;
-
   & > .loader__bar {
     position: fixed;
+    z-index: 3000;
     bottom: 0;
     left: 0;
     right: 0;
@@ -43,12 +42,15 @@
 
   & > .loader__message {
     position: fixed;
-    bottom: 1rem;
+    bottom: 1.5rem;
+    z-index: 3000;
     left: 50%;
     transform: translate(-50%);
-    
+    user-select: none;
+
     background-color: rgba(#fff, 0.7);
     border: 1px solid rgba(#fff, 0.9);
+    mix-blend-mode: difference;
     padding: 0.4rem;
     color: #323232;
     border-radius: $borderRadius;

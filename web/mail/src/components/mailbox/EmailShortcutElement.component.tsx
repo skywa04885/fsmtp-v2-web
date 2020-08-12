@@ -1,5 +1,5 @@
 import React from 'react';
-
+import cnames from 'classnames';
 import { EmailShortcut } from '../../models/EmailShortcut.model';
 
 import './EmailShortcutElement.styles.scss';

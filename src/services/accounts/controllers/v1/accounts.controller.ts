@@ -5,13 +5,6 @@ import { Account } from '../../../../models/accounts/account.model';
 
 export namespace Controllers
 {
-  /**
-   * Gets the information of an account
-   * 
-   * @param req
-   * @param res
-   * @param next
-   */
   export const GET_GetAccount = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next

@@ -1,8 +1,9 @@
 import cassandraDriver from 'cassandra-driver';
-import { Cassandra } from '../../helpers/database.helper';
+import { Cassandra, Redis } from '../../helpers/database.helper';
 import crypto from 'crypto';
 import { reject } from 'async';
 import { bunyan } from 'restify';
+import { RedisClient } from 'redis';
 
 enum AccountType {
   Default
@@ -32,11 +33,6 @@ class Account
   public a_StorageUsedInBytes: number;
   public a_StorageMaxInBytes: number;
 
-  /**
-   * Default constructor for the account data type
-   * 
-   * @param data The accoun'ts data
-   */
   public constructor(data: {
     a_Username: string, a_PictureURI: string, a_Password: string,
     a_Domain: string, a_Bucket: number, a_FullName: string,
@@ -69,13 +65,6 @@ class Account
     this.a_StorageMaxInBytes = data.a_StorageMaxInBytes;
   }
 
-  /**
-   * Gets the password of a user from the database
-   * 
-   * @param a_Bucket The bucket
-   * @param a_Domain The domain
-   * @param a_UUID The UUID
-   */
   public static getPassword = (
     a_Bucket: number, a_Domain: string, 
     a_UUID: cassandraDriver.types.TimeUuid
@@ -95,9 +84,6 @@ class Account
     });
   };
 
-  /**
-   * Saves an account to the database
-   */
   public save = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
       const query: string = `INSERT INTO ${Cassandra.keyspace}.accounts (
@@ -132,11 +118,6 @@ class Account
     });
   };
 
-  /**
-   * Creates an account based on an map
-   * 
-   * @param map The raw map
-   */
   public static fromMap = (map: any) => {
     return new Account({
       a_Username: map['a_username'],
@@ -162,14 +143,7 @@ class Account
       a_StorageMaxInBytes: parseInt(map['a_storage_max_bytes'])
     });
   };
-  
-  /**
-   * Gets an user from the database, the full account to be precise
-   * 
-   * @param a_Bucket The bucket
-   * @param a_Domain The domain
-   * @param a_UUID The UUID
-   */
+
   public static get = (
     a_Bucket: number, a_Domain: string, 
     a_UUID: cassandraDriver.types.TimeUuid
@@ -190,18 +164,17 @@ class Account
         prepare: true
       }).then(res => {
         if (res.rows.length <= 0) resolve(undefined);
+        
         let account: Account = Account.fromMap(res.rows[0]);
         account.a_Domain = a_Domain;
         account.a_UUID = a_UUID;
         account.a_Bucket = a_Bucket;
+
         resolve(account);
       }).catch(err => reject(err));
     });
   };
 
-  /**
-   * Generates an new keypair for the user
-   */
   public generateKeypair = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
       crypto.generateKeyPair(<any>'rsa', {
@@ -224,9 +197,6 @@ class Account
     });
   }
 
-  /**
-   * Gets the current user bucket
-   */
   public static getBucket = (): number => {
     return Math.round(Date.now() / 1000 / 1000 / 10);
   };
@@ -239,11 +209,6 @@ class AccountShortcut
   public a_Username: string;
   public a_UUID: cassandraDriver.types.TimeUuid;
 
-  /**
-   * Default constructor for the account shortcut
-   * 
-   * @param data The data for the account shortcut
-   */
   public constructor(data: {
     a_Bucket: number, a_Domain: string, a_Username: string,
     a_UUID: cassandraDriver.types.TimeUuid
@@ -254,11 +219,6 @@ class AccountShortcut
     this.a_UUID = data.a_UUID;
   }
 
-  /**
-   * Generates an account shortcut from the database map
-   * 
-   * @param map The map from the database
-   */
   public static fromMap = (map: any): AccountShortcut => {
     return new AccountShortcut({
       a_Bucket: map['a_bucket'],
@@ -268,9 +228,15 @@ class AccountShortcut
     });
   };
 
-  /**
-   * Saves an account shortcut to the database
-   */
+  public static fromRedisMap = (map: any, a_Domain: string, a_Username: string): AccountShortcut => {
+    return new AccountShortcut({
+      a_Bucket: map['v1'],
+      a_UUID: cassandraDriver.types.TimeUuid.fromString(map['v2']),
+      a_Domain: a_Domain,
+      a_Username: a_Username
+    });
+  };
+
   public save = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
       const query: string = `INSERT INTO ${Cassandra.keyspace}.account_shortcuts (
@@ -290,27 +256,66 @@ class AccountShortcut
     });
   };
 
-  /**
-   * Gets the account shortcut based on domain and username
-   * 
-   * @param domain The domain the user is registered on
-   * @param username The username of the account
-   */
+  public static getPrefix = (
+    username: string, domain: string
+  ): string => {
+    return `acc:${username}@${domain}`;
+  };
+  
+  public static findRedis = (
+    username: string, domain: string 
+  ): Promise<AccountShortcut> => {
+    return new Promise<AccountShortcut>((resolve, reject) => {
+      Redis.client.hgetall(AccountShortcut.getPrefix(username, domain), (err, res) => {
+        if (err) reject(err);
+        else if (!res) resolve(undefined);
+        else resolve(AccountShortcut.fromRedisMap(res, domain, username));
+      });
+    });
+  };
+
+  public saveRedis = (): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      Redis.client.hmset(
+        AccountShortcut.getPrefix(this.a_Username, this.a_Domain), 
+        'v1', this.a_Bucket.toString(),
+        'v2', this.a_UUID.toString(),
+        (err) => {
+          if (err) return reject(err);
+          resolve();    
+        }
+      )
+    });
+  };
+
   public static find = (domain: string, username: string): Promise<AccountShortcut> => {
     return new Promise<AccountShortcut>((resolve, reject) => {
-      const query: string = `SELECT a_bucket, a_uuid 
-      FROM ${Cassandra.keyspace}.account_shortcuts 
-      WHERE a_domain=? AND a_username=?`;
-  
-      Cassandra.client.execute(query, [domain, username], {
-        prepare: true
-      }).then(data => {
-        if (data.rows.length <= 0) resolve(undefined);
-        let result: AccountShortcut = AccountShortcut.fromMap(data.rows[0]);
-        result.a_Domain = domain;
-        result.a_Username = username;
-        resolve(result);
-      }).catch(err => reject(err));
+
+      // Performs initial attempt from redis, if this fails
+      //  we will try again using cassandra
+
+      AccountShortcut.findRedis(username, domain).then(redisShortcut => {
+        if (redisShortcut) return resolve(redisShortcut);
+
+        // Performs attempt from cassandra, and if this does work we will add
+        //  it to the redis memory
+
+        const query: string = `SELECT a_bucket, a_uuid 
+        FROM ${Cassandra.keyspace}.account_shortcuts 
+        WHERE a_domain=? AND a_username=?`;
+    
+        Cassandra.client.execute(query, [domain, username], {
+          prepare: true
+        }).then(data => {
+          if (data.rows.length <= 0) return resolve(undefined);
+          
+          let result: AccountShortcut = AccountShortcut.fromMap(data.rows[0]);
+          result.a_Domain = domain;
+          result.a_Username = username;
+
+          result.saveRedis().then(() => resolve(result)).catch(err => reject(err))
+        }).catch(err => reject(err));
+      });
     });
   };
 };

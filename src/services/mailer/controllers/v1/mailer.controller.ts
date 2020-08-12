@@ -6,6 +6,7 @@ import { Mailbox } from '../../../../models/mail/mailbox.model';
 import { validateRequest } from '../../../../helpers/validation.helper';
 import nodemailer from 'nodemailer';
 import { readConfig } from '../../../../helpers/config.helper';
+import { sendInternalServerError } from '../../../../helpers/errors.helper';
 
 const config: any = readConfig();
 
@@ -61,7 +62,7 @@ export namespace Controllers
         }
       }).then(info => {
         res.send(200);
-      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
     }).catch(err => {});
   };
 }

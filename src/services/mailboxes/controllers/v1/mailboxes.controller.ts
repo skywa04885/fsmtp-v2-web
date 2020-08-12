@@ -2,12 +2,13 @@ import restify from 'restify';
 import errors from 'restify-errors';
 import cassandraDriver, { auth } from 'cassandra-driver';
 import { Bearer } from '../../../../helpers/bearer.helper';
-import { Mailbox } from '../../../../models/mail/mailbox.model';
+import { Mailbox, MailboxFlags } from '../../../../models/mail/mailbox.model';
 import { validateRequest } from '../../../../helpers/validation.helper';
-import { EmailShortcut } from '../../../../models/mail/email-shortcut.model';
-import { reject } from 'async';
+import { EmailShortcut, EmailFlags } from '../../../../models/mail/email-shortcut.model';
+import { reject, auto } from 'async';
 import { EmailRaw } from '../../../../models/mail/email-raw.model';
 import { MailboxStatus } from '../../../../models/mail/mailbox-status.model';
+import { sendInternalServerError } from '../../../../helpers/errors.helper';
 
 export namespace Controllers
 {
@@ -30,7 +31,7 @@ export namespace Controllers
           }
         }));
         // End -> Mailbox.gatherAll()
-      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
       // -> End Bearer.authRequest()
     }).catch(err => {});
   };
@@ -53,6 +54,8 @@ export namespace Controllers
 
     if (from >= to) res.json([]);
 
+    // Authenticates the user and starts fetching the emails
+    //  after this we make them more JSON readable and send them
     Bearer.authRequest(req, res, next).then(authObj => {
       EmailShortcut.gatherAll(from, to, authObj.domain, mailbox, authObj.uuid).then(data => {
         res.json(data.map(shortcut => {
@@ -65,11 +68,12 @@ export namespace Controllers
             e_bucket: shortcut.e_Bucket,
             e_size_octets: shortcut.e_SizeOctets,
             e_uid: shortcut.e_UID,
-            e_from: shortcut.e_From
+            e_from: shortcut.e_From,
+            e_mailbox: shortcut.e_Mailbox
           };
         }));
         // -> End EmailShortcut.gatherAll()
-      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
       // -> End Bearer.authRequest()
     }).catch(err => {});
   };
@@ -81,10 +85,14 @@ export namespace Controllers
     let bucket: number;
     let emailUuid: cassandraDriver.types.TimeUuid;
 
+    // Checks if the email bucket is in the header, and then tries
+    //  to parse it as an integer
     if (!req.headers['email-bucket'])
       return next(new errors.InvalidHeaderError('Email-Bucket header is required'));
     else bucket = parseInt(req.headers['email-bucket'].toString());
-
+    
+    // Checks if the email uuid is in the header, since the parsing may crash
+    //  the current thread, we will do it in try catch statement
     if (!req.headers['email-uuid'])
       return next(new errors.InvalidHeaderError('Email-UUID header is required'));
     else {
@@ -101,7 +109,7 @@ export namespace Controllers
         else res.send(200, email.e_Content, {
           'Content-Type': 'text/plain'
         });
-      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
     }).catch(err => {});
   };
 
@@ -109,7 +117,64 @@ export namespace Controllers
     req: restify.Request, res: restify.Response, 
     next: restify.Next
   ) => {
+    if (!validateRequest(req, res, next, {
+      properties: {
+        flag: {
+          type: 'string',
+          required: true
+        },
+        mailbox: {
+          type: 'string',
+          required: true
+        },
+        email_uuid: {
+          type: 'string',
+          required: true
+        }
+      }
+    })) return;
 
+    // Checks if the flag is valid, if so store the binary
+    //  value of the flag, so we can later set it
+    let flag: number;
+    switch (req.body.flag.toString()) {
+      case 'seen':
+        flag = EmailFlags.Seen;
+        break;
+      case 'deleted':
+        flag = EmailFlags.Deleted;
+        break;
+      default: return next(new errors.InvalidArgumentError());
+    }
+
+    // Parses the email uuid, and throws error
+    //  if this does not work out
+    let uuid: cassandraDriver.types.TimeUuid;
+    try {
+      uuid = cassandraDriver.types.TimeUuid.fromString(req.body.email_uuid);
+    } catch (err) {
+      return sendInternalServerError(req, res, next, err, __filename);
+    }
+
+    Bearer.authRequest(req, res, next).then(authObj => {
+      EmailShortcut.setFlag(
+        authObj.domain, authObj.uuid, 
+        req.body.mailbox, uuid, flag
+      ).then(() => {
+
+        // Checks if we need to perform any further operations
+        if (flag === EmailFlags.Deleted) {
+          MailboxStatus.addOneEmail(authObj.bucket, authObj.domain, authObj.uuid, 'INBOX.Trash').then(() => {
+            MailboxStatus.removeOneEmail(authObj.bucket, authObj.domain, authObj.uuid, req.body.mailbox).then(() => {
+              res.send(200, 'success');
+            }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+          }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+        } else {
+          res.send(200, 'success');
+        }
+      })
+      .catch(err => sendInternalServerError(req, res, next, err, __filename));
+    });
   };
 
   export const GET_MailboxStats = (
@@ -118,6 +183,8 @@ export namespace Controllers
   ) => {
     let mailboxes: string[] = [];
 
+    // Checks if the headers contain the mailboxes field
+    //  this header will be used to check which mailboxes needs to be checked
     if (!req.headers['mailboxes'])
       return next(new errors.InvalidHeaderError('Mailboxes header is required'));
     else mailboxes = req.headers['mailboxes'].toString().split(',');
@@ -125,6 +192,8 @@ export namespace Controllers
     Bearer.authRequest(req, res, next).then(authObj => {
       let tasks: any[] = [];
 
+      // Generates teh batch mailbox status tasks, these will be executed in paralell
+      //  by the next command
       mailboxes.forEach(mailbox => {
         tasks.push(MailboxStatus.get(authObj.bucket, authObj.domain, authObj.uuid, mailbox));
       });
@@ -141,7 +210,7 @@ export namespace Controllers
             s_path: result.s_MailboxPath
           };
         }))
-      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
     }).catch(err => {});
   };
 
@@ -165,5 +234,23 @@ export namespace Controllers
         }
       }
     })) return;
+
+    // Tries to parse the uuid, this may crash the server and that
+    //  is why we use an try/catch... Learned it the hard way
+    let uuid: cassandraDriver.types.TimeUuid;
+    try {
+      uuid = cassandraDriver.types.TimeUuid.fromString(req.body.email_uuid);
+    } catch (err)
+    {
+      return sendInternalServerError(req, res, next, err, __filename);
+    }
+
+    Bearer.authRequest(req, res, next).then(authObj => {
+      // Moves the email shortcut, after which we will update the in memory stats
+      //  of both of the mailboxes
+      EmailShortcut.move(authObj.domain, authObj.uuid, req.body.mailbox, uuid, req.body.mailbox_target, authObj.bucket).then(() => {
+        res.send(200, 'success');
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+    }).catch(err => {});
   };
 }

@@ -70,6 +70,7 @@ class Mailbox {
 
       // Creates the vector of queries, so we can later execute
       //  them in a batch way
+      
       const queries: any[] = [];
       mailboxes.forEach(mailbox => {
         queries.push({
@@ -83,6 +84,7 @@ class Mailbox {
 
       // Performs the batch execution, this will be more cheap to do
       //  when we have large sets of data
+
       Cassandra.client.batch(queries, {
         prepare: true
       }).then(() => resolve()).catch(err => reject(err));

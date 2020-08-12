@@ -12,11 +12,12 @@ import { Mailbox } from './models/Mailbox.model';
 import { MailboxesService } from './services/Mailboxes.service';
 import EmailPage from './pages/Email.page';
 import Compose from './components/Compose.component';
-
-import './app.scss';
 import { MailboxStatus } from './models/MailboxStatus.model';
 
-const StartupSound =  require('./static/startup.mp3');
+import './app.scss';
+import { popup } from '.';
+
+const StartupSound = require('./static/startup.mp3');
 
 interface AppProps {}
 
@@ -46,15 +47,13 @@ class App extends React.Component {
     };
   }
 
-  /**
-   * Handles the startup, this will make sure that the user
-   *  gets logged in, and else redirected
-   */
   public componentDidMount = (): void => {
     setTimeout(() => {
       this.setState({
         loaderMessage: 'Authenticating'
       }, () => {
+        // Authenticates the user, and if not throws error
+        //  messge to the screen
         AccountService.authenticate().then(success => {
           if (!success) {
             this.setState({
@@ -79,7 +78,7 @@ class App extends React.Component {
             }, 400);
           }
         }).catch(err => {
-          
+          popup.current?.showText(err.toString(), 'Could not authenticate');
         });
       });
     }, 100);
@@ -91,31 +90,36 @@ class App extends React.Component {
     MailboxesService.gatherMailboxes().then(mailboxes => {
       this.loader?.current?.show('Loading mailbox statistics');
       MailboxesService.gatherMailboxStats(mailboxes).then(mailboxStats => {
+        this.loader?.current?.hide();
+
         this.setState({
           mailboxes,
           mailboxStats,
           ready: true
         });
-
+      }).catch(err => {
         this.loader?.current?.hide();
-      }).catch(err => {});
-    }).catch(err => {});
+        popup.current?.showText(err.toString(), 'Could not load statistics');
+      });
+    }).catch(err => {
+      this.loader?.current?.hide();
+      popup.current?.showText(err.toString(), 'Could not load mailboxes');
+    });
   };
 
-  /**
-   * Toggles the sidebar
-   */
   public toggleSidebar = (): void => {
     document.getElementById('app__sidebar')?.toggleAttribute('hidden');
   }
 
-  /**
-   * Renders the page, and if loading the splashscreen
-   */
   public render = (): any => {
     const { loading, loaderMessage, mailboxes, mailboxStats, ready } = this.state;
 
-    if (loading) return <Splashscreen message={loaderMessage} />
+    if (loading)
+      return (
+        <React.Fragment>
+          <Splashscreen message={loaderMessage} />
+        </React.Fragment>
+      );
 
     return (
       <React.Fragment>
@@ -124,7 +128,7 @@ class App extends React.Component {
             <ul className="app__sidebar__ul">
               <li className="app__sidebar__ul__li">
                 {/* The folders */}
-                <p className="app__sidebar__ul__li__title">
+                <div className="app__sidebar__ul__li__title">
                   <strong>Folders:</strong>
                   <div>
                     <button title="Add user defined folder" className="app__sidebar__ul__li__title-btn" type="button">
@@ -139,7 +143,7 @@ class App extends React.Component {
                       </svg>
                     </button>
                   </div>
-                </p>
+                </div>
                 <ul className="app__sidebar__ul__li__folders">
                   {mailboxes.map((mailbox: Mailbox) => {
                     return (
@@ -177,8 +181,8 @@ class App extends React.Component {
                         viewBox="0 0 24 24"
                         width="24"
                       >
-                          <path d="M0 0h24v24H0z" fill="none"/>
-                          <path d="M7 5h10v2h2V3c0-1.1-.9-1.99-2-1.99L7 1c-1.1 0-2 .9-2 2v4h2V5zm8.41 11.59L20 12l-4.59-4.59L14 8.83 17.17 12 14 15.17l1.41 1.42zM10 15.17L6.83 12 10 8.83 8.59 7.41 4 12l4.59 4.59L10 15.17zM17 19H7v-2H5v4c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4h-2v2z"/>
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M7 5h10v2h2V3c0-1.1-.9-1.99-2-1.99L7 1c-1.1 0-2 .9-2 2v4h2V5zm8.41 11.59L20 12l-4.59-4.59L14 8.83 17.17 12 14 15.17l1.41 1.42zM10 15.17L6.83 12 10 8.83 8.59 7.41 4 12l4.59 4.59L10 15.17zM17 19H7v-2H5v4c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4h-2v2z"/>
                       </svg>
                       Developer Info
                     </NavLink>
@@ -212,12 +216,14 @@ class App extends React.Component {
                       />
                     );
                   }} />
-                  <Route path="/mail/:bucket/:uuid" component={(props: any) => {
+                  <Route path="/mail/:mailbox/:bucket/:uuid" component={(props: any) => {
                     return (
                       <EmailPage
                         match={props.match}
                         history={props.history}
                         setToolbar={this.toolbar?.current?.setToolbar}
+                        showLoader={this.loader?.current?.show}
+                        hideLoader={this.loader?.current?.hide}
                       />
                     );
                   }}/>

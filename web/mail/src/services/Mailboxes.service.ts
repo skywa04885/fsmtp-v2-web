@@ -3,7 +3,7 @@ import Axios from 'axios';
 
 import { Mailbox } from '../models/Mailbox.model';
 import { AccountService } from './Accounts.service';
-import { EmailShortcut } from '../models/EmailShortcut.model';
+import { EmailShortcut, EmailFlags } from '../models/EmailShortcut.model';
 import { MailboxStatus } from '../models/MailboxStatus.model';
 
 export class MailboxesService {
@@ -73,7 +73,68 @@ export class MailboxesService {
 
           resolve(response.data.map((rawShortcut: any) => EmailShortcut.fromMap(rawShortcut)));
         }).catch(err => reject(err));
-      }, 200);
+      }, 50);
+    });
+  };
+
+  public static flag = (mailbox: string, emailUUID: string, flag: number): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      const url: string = Config.buildURL('/email/flag', MailboxesService.port);
+      const options: any = {
+        headers: Object.assign(Config.defaultHeaders, {
+          'Authorization': AccountService.buildBearer()
+        })
+      };
+
+      let flagStr: string;
+      switch (flag)
+      {
+        case EmailFlags.Seen:
+          flagStr = 'seen';
+          break;
+        case EmailFlags.Deleted:
+          flagStr = 'deleted';
+          break;
+        default: return reject('Flag not implemented');
+      }
+
+      const fields: any = {
+        email_uuid: emailUUID,
+        mailbox: mailbox,
+        flag: flagStr
+      };
+
+      Axios.post(url, fields, options).then(response => {
+        if (response.status !== 200)
+          return reject(new Error(`${response.status}: ${response.statusText}`));
+
+        resolve();
+      }).catch(err => reject(err));
+    });
+  };
+
+  public static move = (mailbox: string, emailUUID: string, mailboxTarget: string): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      setTimeout(() => {
+        const url: string = Config.buildURL('/email/move', MailboxesService.port);
+        const options: any = {
+          headers: Object.assign(Config.defaultHeaders, {
+            'Authorization': AccountService.buildBearer()
+          })
+        };
+        const fields: any = {
+          mailbox,
+          mailbox_target: mailboxTarget,
+          email_uuid: emailUUID
+        };
+  
+        Axios.post(url, fields, options).then(response => {
+          if (response.status !== 200)
+            return reject(new Error(`${response.status}: ${response.statusText}`));
+  
+          resolve();
+        }).catch(err => reject(err));
+      }, 400);
     });
   };
 

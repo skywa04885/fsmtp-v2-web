@@ -1,0 +1,67 @@
+@import '../../theme.scss';
+
+.fullscreen-message {
+  text-align: center;
+  background-color: rgba(#fff, .8);
+  border: 1px solid rgba(#fff, 0.5);
+  padding: 1rem;
+
+  & > .fullscreen-message__picture {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 1rem;
+
+    & > svg {
+      fill: #323232;
+      width: 3.8rem;
+      height: 3.8rem;
+    }
+  }
+
+  & > .fullscreen-message__info {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: left;
+
+    & > p {
+      font-size: 0.9rem;
+      color: #555555;
+
+      & > strong {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #323232;
+
+        & > span {
+          animation: EmailLoadingDot 1.4s both infinite;
+    
+          &:nth-child(1) {
+            animation-delay: 0;
+          }
+    
+          &:nth-child(2) {
+            animation-delay: .2s;
+          }
+    
+          &:nth-child(3) {
+            animation-delay: .4s;
+          }
+    
+          @keyframes EmailLoadingDot {
+            0% {
+              opacity: .2;
+            }
+    
+            20% {
+              opacity: 1;
+            }
+    
+            100% {
+              opacity: .2;
+            }
+          }
+        }
+      }
+    }
+  }
+}

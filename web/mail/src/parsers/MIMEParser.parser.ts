@@ -124,9 +124,6 @@ const decodeQuotedPrintable = (raw: string): string => {
     }
   }
 
-  console.log(result);
-
-
   result = result.replace(/=[0-9A-Za-z]{2}/g, (match, capture) => {
     return String.fromCharCode(parseInt(match.substr(1), 16));
   });
@@ -136,7 +133,7 @@ const decodeQuotedPrintable = (raw: string): string => {
 
 const recursiveParse = async (raw: string, target: Email, i: number) => {
   const { headers, body } = splitHeadersAndBody(raw);
-  console.log(uniteLines(headers));
+  const iCopy: number = i;
 
   const parsedHeaders: Header[] = parseHeaders(headers);
   let resultSection: EmailBodySection = {
@@ -161,18 +158,26 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
     }
   });
 
+  console.info(`Recursive parser round ${i}`, contentType);
+
   // Checks how we should process the data, this may be text, etcetera
   //  next to that we also decode the text, so the user can read it
   switch (resultSection.e_Type)
   {
-    case EmailContentType.ImageJpg: case EmailContentType.ImagePng: {
+    case EmailContentType.ImageJpg: case EmailContentType.ImagePng: case EmailContentType.Unknown: {
       switch (resultSection.e_TransferEncoding) {
         case EmailTransferEncoding.Base64: {
           const fileType: EmailContentType = contentType.type ? contentType.type : EmailContentType.Unknown
           const fileTypeString: string = contentTypeToString(fileType);
 
-          const fileURI: string = `base64,${body.split('\r\n').join()}`;
-          const res: any = await fetch(fileURI);
+          const byteChars: string = atob(body);
+          const byteNumbers: any = new Array(byteChars.length);
+          for (let i: number = 0; i < byteChars.length; i++)
+            byteNumbers[i] = byteChars.charCodeAt(i);
+          const res: any = new File(byteNumbers, contentType.name ? contentType.name : 'unknown.bin', {
+            type: fileTypeString
+          });
+
           resultSection.e_Content = new File(
             [ res.arrayBuffer() ], 
             contentType.name ? contentType.name : `F${Date.now()}.bin`,
@@ -229,7 +234,7 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
             // Calls the recursive method, increments the index
             //  and then clears the buffer
             if (temp.trim() !== '') {
-              await recursiveParse(temp, target, i + 1);
+              await recursiveParse(temp, target, ++i);
               temp = '';
             }
 
@@ -250,7 +255,7 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
 
   // Checks if we need to use the headers for the main message
   //  information
-  if (i === 0) {
+  if (iCopy === 0) {
     // Parses the header values, and stores the headers inside of the email
     target.e_Headers = parsedHeaders;
     parsedHeaders.forEach(header => {
@@ -289,12 +294,15 @@ export const parse = (raw: string): Promise<Email> => {
       let start: number = Date.now();
 
       // Cleans the message and proceeds with parsing
+      console.info('Parser received new job');
       const cleaned: string = raw.replace(/ +(?= )/g, '').replace(/\t/g, ' ');
       await recursiveParse(cleaned, result, 0);
   
-      console.log(`Parser finished job ${Date.now() - start}ms`);
+      console.info(`Parser finished job ${Date.now() - start}ms`);
       resolve(result);
     } catch (e) {
+      console.error(`Parser rejected job: `);
+      console.error(e);
       reject(e);
     }
   });

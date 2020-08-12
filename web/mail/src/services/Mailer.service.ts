@@ -25,9 +25,7 @@ export class MailerService {
             return reject(`${response.status}: ${response.statusText}`);
           
           resolve();
-        });
-
-        resolve();
+        }).catch(err => reject(err));
       }, 400);
     });
   };

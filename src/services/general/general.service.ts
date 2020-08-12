@@ -20,5 +20,9 @@ app.get('/mail/*', (req, res, next) => {
   res.sendFile(path.join(process.cwd(), 'web', 'mail', 'build', 'index.html'));
 });
 
+app.get('/*', (req, res, next) => {
+  res.redirect(301, '/auth/login');
+});
+
 // Listens the server
 app.listen(PORT, () => logger.print(`Server listening on port ${PORT}`));

@@ -1,3 +1,12 @@
+export const EmailFlags = {
+  Seen: 1,
+  Answered: 2,
+  Flagged: 4,
+  Deleted: 8,
+  Draft: 16,
+  Recent: 32
+};
+
 export class EmailShortcut {
   public e_Subject: string;
   public e_Preview: string;

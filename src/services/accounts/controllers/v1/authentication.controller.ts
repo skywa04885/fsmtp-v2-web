@@ -10,6 +10,7 @@ import async, { reject } from 'async';
 import { Mailbox, MailboxFlags } from '../../../../models/mail/mailbox.model';
 import { AES256 } from '../../../../helpers/aes.helper';
 import { Bearer } from '../../../../helpers/bearer.helper';
+import { sendInternalServerError } from '../../../../helpers/errors.helper';
 
 const config: any = readConfig();
 const usernameRegex = '^[A-Za-z0-9._]{1,80}$';
@@ -85,8 +86,6 @@ export namespace Controllers
   ) => {
     const logger: Logger = new Logger(LoggerLevel.Debug, `POST_AuthRegister:${req.connection.remoteAddress}`);
 
-    // Validates the request body, and returns if not valid
-    //  since the error message is already handled in the mean time
     logger.print('Validating request ...');
     if (!validateRequest(req, res, next, {
       properties: {
@@ -196,19 +195,19 @@ export namespace Controllers
                           bucket: accountShortcut.a_Bucket
                         }
                       });
-                    }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+                    }).catch(err => sendInternalServerError(req, res, next, err, __filename));
                     // -> End POST_AuthRegister_InitializeMailboxes()
-                }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+                }).catch(err => sendInternalServerError(req, res, next, err, __filename));
                 // -> End account.save()
-              }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+              }).catch(err => sendInternalServerError(req, res, next, err, __filename));
               // -> End accountShortcut.save()
-            }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+            }).catch(err => sendInternalServerError(req, res, next, err, __filename));
             // -> End AES256.encrypt()
-          }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+          }).catch(err => sendInternalServerError(req, res, next, err, __filename));
         // -> End passwordHash()
-      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
       // -> End AccountShortcut.find()
-    }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+    }).catch(err => sendInternalServerError(req, res, next, err, __filename));
   };
 
   export const POST_AuthLogin = (
@@ -271,10 +270,10 @@ export namespace Controllers
             bearer
           });
           // -> End passwordVerify()
-        }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+        }).catch(err => sendInternalServerError(req, res, next, err, __filename));
         // -> End Account.getPassword()
-      }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
       // -> End AccountShortcut.find()
-    }).catch(err => next(new errors.InternalServerError({}, err.toString())));
+    }).catch(err => sendInternalServerError(req, res, next, err, __filename));
   }
 };

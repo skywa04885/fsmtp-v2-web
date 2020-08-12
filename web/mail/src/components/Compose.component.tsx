@@ -5,6 +5,7 @@ import cnames from 'classnames';
 import './Compose.styles.scss';
 import { AccountService } from '../services/Accounts.service';
 import { MailerService } from '../services/Mailer.service';
+import { popup } from '..';
 
 enum ComposeState {
   Hidden,
@@ -109,6 +110,7 @@ export default class Compose extends React.Component<any, any> {
       hideLoader();
       this.hide();
     }).catch(err => {
+      popup.current?.showText(err.toString(), 'Could not send email');
       hideLoader();
     });
   };

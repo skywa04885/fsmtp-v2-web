@@ -2,6 +2,9 @@ import cassandraDriver from 'cassandra-driver';
 import { Cassandra, Redis } from '../../helpers/database.helper';
 import { EmailShortcut, EmailFlags } from './email-shortcut.model';
 import { Mailbox } from './mailbox.model';
+import { reject } from 'async';
+import Mail from 'nodemailer/lib/mailer';
+import { NotImplementedError } from 'restify-errors';
 
 export class MailboxStatus {
   public s_Bucket?: number;
@@ -60,7 +63,7 @@ export class MailboxStatus {
 
   public static restoreFromCassandra = (
     s_Bucket: number, s_Domain: string, 
-    s_UUID: cassandraDriver.types.TimeUuid, mailboxPath: string
+    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string
   ): Promise<MailboxStatus> => {
     return new Promise<MailboxStatus>((resolve, reject) => {
       let result: MailboxStatus = new MailboxStatus({
@@ -70,15 +73,15 @@ export class MailboxStatus {
         s_Bucket: s_Bucket,
         s_Domain: s_Domain,
         s_UUID: s_UUID,
-        s_MailboxPath: mailboxPath
+        s_MailboxPath: s_MailboxPath
       });
       
       // Gets the normal stuff from the mailbox, this is required for later storage
       //  we will get this with a basic mailbox query
 
-      Mailbox.get(s_Bucket, s_Domain, s_UUID, mailboxPath).then(mailbox => {
+      Mailbox.get(s_Bucket, s_Domain, s_UUID, s_MailboxPath).then(mailbox => {
         if (!mailbox)
-          return reject(new Error(`Could not find mailbox ${s_Bucket}:${s_Domain}:${s_UUID}:${mailboxPath}`));
+          return reject(new Error(`Could not find mailbox ${s_Bucket}:${s_Domain}:${s_UUID}:${s_MailboxPath}`));
         
         result.s_PermaFlags = mailbox.e_Flags;
         result.s_Flags = mailbox.e_Flags;
@@ -92,7 +95,7 @@ export class MailboxStatus {
         try {
           let largestUid: number = 0;
           Cassandra.client.eachRow(query, [
-            s_Domain, s_UUID, mailboxPath
+            s_Domain, s_UUID, s_MailboxPath
           ], {
             autoPage: true,
             prepare: true
@@ -112,6 +115,33 @@ export class MailboxStatus {
           reject (err);
         }
       })
+    });
+  };
+
+  public static removeOneEmail = (
+    s_Bucket: number, s_Domain: string, 
+    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string
+  ): Promise<MailboxStatus> => {
+    return new Promise<MailboxStatus>((resolve, reject) => {
+      MailboxStatus.get(s_Bucket, s_Domain, s_UUID, s_MailboxPath).then(status => {
+        --(<number>status.s_Total);
+
+        status.saveTotalAndUID(s_MailboxPath).then(() => resolve(status)).catch(err => reject(err));
+      }).catch(err => reject(err));
+    });
+  };
+
+  public static addOneEmail = (
+    s_Bucket: number, s_Domain: string, 
+    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string
+  ): Promise<MailboxStatus> => {
+    return new Promise<MailboxStatus>((resolve, reject) => {
+      MailboxStatus.get(s_Bucket, s_Domain, s_UUID, s_MailboxPath).then(status => {
+        ++(<number>status.s_Total);
+        ++(<number>status.s_NextUID);
+
+        status.saveTotalAndUID(s_MailboxPath).then(() => resolve(status)).catch(err => reject(err));
+      }).catch(err => reject(err));
     });
   };
 
@@ -137,34 +167,53 @@ export class MailboxStatus {
     });
   };
 
-  public resetRecent = (mailboxPath: string): Promise<null> => {
+  public saveTotalAndUID = (s_MailboxPath: string): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      if (!this.s_Bucket || !this.s_Domain || !this.s_UUID)
+      if (this.s_Bucket === undefined || this.s_Domain  === undefined || 
+        this.s_UUID === undefined || this.s_Total === undefined || 
+        this.s_NextUID === undefined
+      ) return reject(new Error('Please supply all params'));
+
+      Redis.client.hmset(
+        MailboxStatus.getPrefix(this.s_Bucket, this.s_Domain, this.s_UUID, s_MailboxPath),
+          'v3', this.s_Total,
+          'v5', this.s_NextUID, (err) => {
+          if (err) return reject(err);
+          resolve();
+        }
+      );
+    });
+  };
+
+  public resetRecent = (s_MailboxPath: string): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      if (this.s_Bucket === undefined || this.s_Domain === undefined || this.s_UUID === undefined)
         return reject(new Error('Please supply all params'));
 
       Redis.client.hmset(
-        MailboxStatus.getPrefix(this.s_Bucket, this.s_Domain, this.s_UUID, mailboxPath), 
+        MailboxStatus.getPrefix(this.s_Bucket, this.s_Domain, this.s_UUID, s_MailboxPath), 
         'v6', 0, (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
+          if (err) return reject(err);
+          resolve();
+        }
+      );
     });
   };
 
   public static get = (
     s_Bucket: number, s_Domain: string, 
-    s_UUID: cassandraDriver.types.TimeUuid, mailboxPath: string
+    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string
   ): Promise<MailboxStatus> => {
     return new Promise<MailboxStatus>((resolve, reject) => {
       // Attempts redis fetch, if this turns out to be a failure, we build a new redis
       //  record using the existing cassandra data ( expensive )
-      MailboxStatus.getFromRedis(s_Bucket, s_Domain, s_UUID, mailboxPath).then(redisMailbox => {
+      MailboxStatus.getFromRedis(s_Bucket, s_Domain, s_UUID, s_MailboxPath).then(redisMailbox => {
         if (!redisMailbox) {
-          MailboxStatus.restoreFromCassandra(s_Bucket, s_Domain, s_UUID, mailboxPath).then(mailbox => {
-            mailbox.save(mailboxPath).then(() => resolve(mailbox)).catch(err => reject(err));
+          MailboxStatus.restoreFromCassandra(s_Bucket, s_Domain, s_UUID, s_MailboxPath).then(mailbox => {
+            mailbox.save(s_MailboxPath).then(() => resolve(mailbox)).catch(err => reject(err));
           }).catch(err => reject(err));
         } else {
-          redisMailbox.resetRecent(mailboxPath);
+          redisMailbox.resetRecent(s_MailboxPath);
           resolve(redisMailbox);
         }
       }).catch(err => reject(err));
@@ -173,11 +222,11 @@ export class MailboxStatus {
 
   public static getFromRedis = (
     s_Bucket: number, s_Domain: string, 
-    s_UUID: cassandraDriver.types.TimeUuid, mailboxPath: string
+    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string
   ): Promise<MailboxStatus> => {
     return new Promise<MailboxStatus>((resolve, reject) => {
       Redis.client.hgetall(MailboxStatus.getPrefix(
-        s_Bucket, s_Domain, s_UUID, mailboxPath
+        s_Bucket, s_Domain, s_UUID, s_MailboxPath
       ), (err, res) => {
         if (err) reject(err);
         else if (!res) return resolve(undefined);
@@ -185,7 +234,7 @@ export class MailboxStatus {
         result.s_Bucket = s_Bucket;
         result.s_Domain = s_Domain;
         result.s_UUID = s_UUID;
-        result.s_MailboxPath = mailboxPath;
+        result.s_MailboxPath = s_MailboxPath;
         resolve(result);
       });
     });
