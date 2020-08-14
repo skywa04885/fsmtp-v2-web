@@ -10,7 +10,7 @@ export const popup: React.RefObject<Popup> = React.createRef<Popup>();
 
 ReactDOM.render(
   <BrowserRouter>
-    <Popup ref={popup} />
+    <Popup ref={popup} basename="/mail" />
     <App />
   </BrowserRouter>,
   document.getElementById('root')

@@ -21,14 +21,12 @@
   "global": {
     "domain": "fannst.nl",
     "cassandra": {
-      "hosts": ["192.168.2.11"],
-      "datacenter": "datacenter1",
-      "keyspace": "fannst",
-      "username": "cassandra",
-      "password": "cassandra"
+      "hosts": ["0.0.0.0"],
+      "datacenter": "Cassandra",
+      "keyspace": "fannst"
     },
     "redis": {
-      "host": "192.168.2.11",
+      "host": "0.0.0.0",
       "port": 6379
     }
   }
