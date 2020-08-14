@@ -21,7 +21,7 @@ app.get('/mail/*', (req, res, next) => {
 });
 
 app.get('/*', (req, res, next) => {
-  res.redirect(301, '/auth/login');
+  res.redirect(301, '/mail');
 });
 
 // Listens the server

@@ -9,8 +9,8 @@ import Popup from './components/misc/Popup.component';
 export const popup: React.RefObject<Popup> = React.createRef<Popup>();
 
 ReactDOM.render(
-  <BrowserRouter>
-    <Popup ref={popup} basename="/mail" />
+  <BrowserRouter basename="/mail">
+    <Popup ref={popup} />
     <App />
   </BrowserRouter>,
   document.getElementById('root')
