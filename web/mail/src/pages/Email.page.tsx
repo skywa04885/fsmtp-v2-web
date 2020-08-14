@@ -14,7 +14,8 @@ import './Email.styles.scss';
 interface EmailPageProps {
   setToolbar: (buttons: ToolbarButton[]) => {},
   showLoader: (message: string) => {},
-  hideLoader: () => {}
+  hideLoader: () => {},
+  updateMailboxStat: (mailbox: string, add: number) => {}
 }
 
 export default class EmailPage extends React.Component<any, any> {
@@ -225,11 +226,13 @@ export default class EmailPage extends React.Component<any, any> {
 
   public onDeleteOperation = (): void => {
     const { uuid, mailbox } = this.props.match.params;
-    const { history, showLoader, hideLoader } = this.props;
+    const { history, showLoader, hideLoader, updateMailboxStat } = this.props;
 
     showLoader(`Flagging message as deleted`);
     MailboxesService.flag(mailbox, uuid, EmailFlags.Deleted).then(() => {
       hideLoader();
+      updateMailboxStat(mailbox, -1);
+      updateMailboxStat("INBOX.Trash", 1);
       history.push(`/mailbox/${mailbox}`);
     }).catch(err => {
       popup.current?.showText(err.toString(), 'Could not move message');
@@ -239,11 +242,13 @@ export default class EmailPage extends React.Component<any, any> {
 
   public onMoveOperation = (mailboxTarget: string): void => {
     const { uuid, mailbox } = this.props.match.params;
-    const { history, showLoader, hideLoader } = this.props;
+    const { history, showLoader, hideLoader, updateMailboxStat } = this.props;
 
     showLoader(`Moving message to ${mailboxTarget}`);
     MailboxesService.move(mailbox, uuid, mailboxTarget).then(() => {
       hideLoader();
+      updateMailboxStat(mailbox, -1);
+      updateMailboxStat(mailboxTarget, 1);
       history.push(`/mailbox/${mailbox}`);
     }).catch(err => {
       popup.current?.showText(err.toString(), 'Could not move message');

@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "FSMTP-V2",
+  "name": "FSMTP-V2 Webmail Client",
   "icons": [
     {
       "src": "favicon.ico",

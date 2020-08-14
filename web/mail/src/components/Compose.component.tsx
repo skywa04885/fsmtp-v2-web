@@ -16,7 +16,8 @@ enum ComposeState {
 
 interface ComposeProps {
   showLoader: (message: string) => {},
-  hideLoader: () => {}
+  hideLoader: () => {},
+  updateMailboxStat: (mailbox: string, add: number) => {}
 }
 
 export default class Compose extends React.Component<any, any> {
@@ -101,12 +102,13 @@ export default class Compose extends React.Component<any, any> {
 
   public onSubmit = () => {
     const { subject, message, to } = this.state;
-    const { showLoader, hideLoader } = this.props;
+    const { showLoader, hideLoader, updateMailboxStat } = this.props;
 
     if (!subject || message.length <= 0 || !to) return;
 
     showLoader('Sending message');
     MailerService.sendMail(subject, to, message.replace(/<[^>]*>?/gm, ''), message).then(() => {
+      updateMailboxStat("INBOX.Sent", 1);
       hideLoader();
       this.hide();
     }).catch(err => {

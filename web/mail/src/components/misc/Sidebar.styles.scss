@@ -1,0 +1,89 @@
+.sidebar {
+  width: 220px;
+  transition: all .6s;
+  border-right: 1px solid rgba(#fff, 0.2);
+
+  & > .sidebar__ul {
+    & > hr {
+      margin-top: 1rem;
+      border: none;
+      border-bottom: 1px solid rgba(#fff, 0.1);
+    }
+
+    & > .sidebar__ul__li {
+      & > .sidebar__ul__li__title {
+        margin: 1rem;
+        color: #fff;
+        font-size: 0.8rem;
+
+        & > strong {
+          text-transform: uppercase;
+          font-weight: bold;
+          display: inline-block;
+          vertical-align: middle;
+          margin-right: 0.4rem;
+        }
+
+        & > div {
+          display: inline-block;
+          vertical-align: middle;
+
+          & > .sidebar__ul__li__title-btn {
+            background: none;
+            border: none;
+            outline: none;
+            width: 2rem;
+            cursor: pointer;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            border-radius: 50%;
+            justify-content: center;
+            border: 1px solid transparent;
+
+            &:hover {
+              background-color: rgba(#fff, 0.2);
+              border: 1px solid rgba(#fff, 0.2);
+            }
+
+            & > svg {
+              width: 1rem;
+              fill: #fff;
+              height: 1rem;
+            }
+          }
+        }
+      }
+
+      & > .sidebar__ul__li__folders {
+        & > li {
+          &:not(:last-child) {
+            margin-bottom: 0.3rem;
+          }
+
+          & > .sidebar__folder-active {
+            background-color: rgba(#fff, 0.2);
+          }
+
+          & > a {
+            & > svg {
+              vertical-align: middle;
+              margin-right: 0.4rem;
+              fill: #fff;
+            }
+
+            margin-right: 1rem;
+            color: #fff;
+            padding: 0.4rem 1rem;
+            display: block;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-decoration: none;
+            border-top-right-radius: 100px;
+            border-bottom-right-radius: 100px;
+          }
+        }
+      }
+    }
+  }
+}

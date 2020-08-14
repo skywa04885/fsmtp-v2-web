@@ -13,7 +13,8 @@ interface InboxPageProps {
   mailbox: string,
   showLoader: (message: string) => {},
   hideLoader: () => {},
-  setToolbar: (buttons: any[]) => {}
+  setToolbar: (buttons: any[]) => {},
+  updateMailboxStat: (mailbox: string, add: boolean) => {}
 }
 
 export default class MailboxPage extends React.Component<any, any>

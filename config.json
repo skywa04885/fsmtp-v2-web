@@ -22,8 +22,10 @@
     "domain": "fannst.nl",
     "cassandra": {
       "hosts": ["0.0.0.0"],
-      "datacenter": "Cassandra",
-      "keyspace": "fannst"
+      "datacenter": "datacenter1",
+      "keyspace": "fannst",
+      "username": "cassandra",
+      "password": "cassandra"
     },
     "redis": {
       "host": "0.0.0.0",
