@@ -1,11 +1,16 @@
 {
+  "ssl": {
+    "key": "env/keys/fannst.key",
+    "ca": "env/keys/fannst_nl.ca-bundle",
+    "cert": "env/keys/fannst_nl.crt"
+  },
   "services": {
     "accounts": {
       "port": 4001,
       "address": "0.0.0.0"
     },
     "general": {
-      "port": 80
+      "port": 443
     },
     "mailboxes": {
       "port": 4002,
@@ -22,7 +27,7 @@
     "domain": "fannst.nl",
     "cassandra": {
       "hosts": ["0.0.0.0"],
-      "datacenter": "datacenter1",
+      "datacenter": "Cassandra",
       "keyspace": "fannst",
       "username": "cassandra",
       "password": "cassandra"

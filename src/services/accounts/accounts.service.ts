@@ -1,4 +1,6 @@
 import restify from 'restify';
+import fs from 'fs';
+import path from 'path';
 import { readConfig } from '../../helpers/config.helper';
 import { Logger, LoggerLevel } from '../../logger';
 import { Routes } from './routes/index';
@@ -8,9 +10,16 @@ import cors from 'restify-cors-middleware';
 const CONFIG: any = readConfig();
 const PORT: number = CONFIG.services.accounts.port;
 const ADDRESS: string = CONFIG.services.accounts.address;
+const CERT: any = fs.readFileSync(path.join(process.cwd(), CONFIG["ssl"]["cert"]));
+const CA: any = fs.readFileSync(path.join(process.cwd(), CONFIG["ssl"]["ca"]));
+const KEY: any = fs.readFileSync(path.join(process.cwd(), CONFIG["ssl"]["key"]));
 
 const logger: Logger = new Logger(LoggerLevel.Info, 'Accounts');
-const server: restify.Server = restify.createServer();
+const server: restify.Server = restify.createServer({
+  key: KEY,
+  cert: CERT,
+  ca: CA
+});
 
 Redis.connect(CONFIG.global.redis);
 Cassandra.connect(CONFIG.global.cassandra);

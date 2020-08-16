@@ -1,10 +1,15 @@
 import express from 'express';
+import fs from 'fs';
+import https from 'https';
 import path from 'path';
 import { readConfig } from '../../helpers/config.helper';
 import { Logger, LoggerLevel } from '../../logger';
 
 const CONFIG: any = readConfig();
 const PORT: number = CONFIG.services.general.port;
+const CERT: any = fs.readFileSync(path.join(process.cwd(), CONFIG["ssl"]["cert"]));
+const CA: any = fs.readFileSync(path.join(process.cwd(), CONFIG["ssl"]["ca"]));
+const KEY: any = fs.readFileSync(path.join(process.cwd(), CONFIG["ssl"]["key"]));
 
 // Creates the express app, logger and adds the basic stuff
 const app: express.Application = express();
@@ -25,4 +30,8 @@ app.get('/*', (req, res, next) => {
 });
 
 // Listens the server
-app.listen(PORT, () => logger.print(`Server listening on port ${PORT}`));
+https.createServer({
+  key: KEY,
+  cert: CERT,
+  ca: CA
+}, app).listen(PORT, () => logger.print(`Server listening on port ${PORT}`));

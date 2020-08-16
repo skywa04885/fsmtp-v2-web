@@ -1,7 +1,7 @@
 export default class Config
 {
-  public static host: string = 'mail.fannst.nl';
-  public static method: string = 'http';
+  public static host: string = 'fannst.nl';
+  public static method: string = 'https';
   public static defaultHeaders: any = {
     'Accept-Version': '1.0.0',
     'Fannst-From': 'Webmail Client'
