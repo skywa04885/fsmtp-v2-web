@@ -12,7 +12,7 @@ interface LoginPageProps {
 };
 
 export default class LoginPage extends React.Component<any, any> {
-  state: {
+  public state: {
     username: string,
     password: string,
     full_name: string,
@@ -89,6 +89,10 @@ export default class LoginPage extends React.Component<any, any> {
         error: err.toString()
       });
     });
+  };
+
+  public componentDidMount = () => {
+    Config.setTitle('Register');
   };
 
   public onChange = (e: Event) => {
@@ -198,7 +202,6 @@ export default class LoginPage extends React.Component<any, any> {
               label="Recovery email"
               type="email"
             />
-            <hr />
             <DefaultButton type="submit" active={valid}>Register</DefaultButton>
           </fieldset>
         </form>

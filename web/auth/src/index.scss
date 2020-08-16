@@ -51,51 +51,58 @@ table {
 body, html {
   font-family: 'Open Sans', sans-serif;
   background-color: #2c2c2c;
-  background-image: url('static/noise.png');
-  background-repeat: repeat;
+  background-image: url('static/background.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
   background-attachment: fixed;
-  scroll-behavior: smooth;
+  margin: 0.4rem;
 }
 
-.wrapper {
-  margin-left: 1rem;
-  margin-right: 1rem;
-  max-width: 500px;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: calc(100% - 4rem);
-  margin: auto;
-  background-color: #ffffff;
-  box-shadow: 2px 2px 9px rgba(20, 20, 20, 0.1);
-  border-bottom-right-radius: 20px;
-  border-bottom-left-radius: 20px;
-  overflow: hidden;
-  border: 1px solid #181818;
+body > a {
+  text-align: center;
+  display: block;
+}
+
+.wrapper__outer {
+  display: flex;
+  height: calc(100vh - 1rem - 0.8rem - 64px);
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+
+  & > .wrapper {
+    max-width: 600px;
+    border: 1px solid #363636;
+    margin: auto;
+    background-color: #fff;
+    box-shadow: 2px 2px 12px rgba(20, 20, 20, .5);
+    border-bottom-right-radius: .5rem;
+    border-bottom-left-radius: .5rem;
+    overflow: hidden;
+  }
 }
 
 fieldset {
   padding: 1rem;
-  border-radius: 0.3rem;
-  margin: 1rem;
-  border: 1px solid #b8b8b8;
+  border-radius: .3rem;
+  margin: .6rem;
+  border: 1px solid #dddddd;
 
   & > legend {
     font-size: 2.2rem;
     font-weight: bold;
-    color: #323232;
+    color: map-get($colors, primary);
   }
 
   & > hr {
     border: none;
-    border-bottom: 1px solid #b8b8b8;
+    border-bottom: 1px solid rgba(map-get($colors, primary), .5);
     margin-top: 1rem;
     margin-bottom: 1rem;
   }
 
   & > p {
-    color: #424242;
+    color: #7c7c7c;
     font-size: 0.9rem;
     margin-bottom: 1.6rem;
   }
@@ -108,23 +115,23 @@ fieldset {
     color: map-get($colors, primary);
     font-size: 0.8rem;
     font-weight: normal;
+    margin-bottom: 0.7rem;
   }
 }
 
 .header {
   padding: 1rem;
-  background: rgba(19,60,75,1);
-  background: -moz-linear-gradient(left, rgba(19,60,75,1) 0%, rgba(14,94,122,1) 50%, rgba(21,129,163,1) 51%, rgba(19,60,75,1) 100%);
-  background: -webkit-gradient(left top, right top, color-stop(0%, rgba(19,60,75,1)), color-stop(50%, rgba(14,94,122,1)), color-stop(51%, rgba(21,129,163,1)), color-stop(100%, rgba(19,60,75,1)));
-  background: -webkit-linear-gradient(left, rgba(19,60,75,1) 0%, rgba(14,94,122,1) 50%, rgba(21,129,163,1) 51%, rgba(19,60,75,1) 100%);
-  background: -o-linear-gradient(left, rgba(19,60,75,1) 0%, rgba(14,94,122,1) 50%, rgba(21,129,163,1) 51%, rgba(19,60,75,1) 100%);
-  background: -ms-linear-gradient(left, rgba(19,60,75,1) 0%, rgba(14,94,122,1) 50%, rgba(21,129,163,1) 51%, rgba(19,60,75,1) 100%);
-  background: linear-gradient(to right, rgba(19,60,75,1) 0%, rgba(14,94,122,1) 50%, rgba(21,129,163,1) 51%, rgba(19,60,75,1) 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#133c4b', endColorstr='#133c4b', GradientType=1 );
+  background: #a90329; /* Old browsers */
+  background: -moz-linear-gradient(top, #a90329 0%, #8f0222 44%, #6d0019 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, #a90329 0%,#8f0222 44%,#6d0019 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom, #a90329 0%,#8f0222 44%,#6d0019 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a90329', endColorstr='#6d0019',GradientType=0 ); /* IE6-9 */
 
   & > img {
-    width: 70%;
+    width: 80%;
+    max-width: 400px;
     display: block;
+    user-select: none;
     margin-left: auto;
     margin-right: auto;
   }
@@ -139,8 +146,6 @@ fieldset {
   background: -ms-linear-gradient(left, rgba(32,34,36,1) 0%, rgba(34,37,38,1) 50%, rgba(37,40,41,1) 51%, rgba(25,26,27,1) 100%);
   background: linear-gradient(to right, rgba(32,34,36,1) 0%, rgba(34,37,38,1) 50%, rgba(37,40,41,1) 51%, rgba(25,26,27,1) 100%);
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#202224', endColorstr='#191a1b', GradientType=1 );
-  
-  border-bottom: 1px solid #323232;
   padding: 0.8rem;
 
   & > .pages__ul {
@@ -153,12 +158,21 @@ fieldset {
 
       & > a {
         color: #ffffff;
-        background-color: #dddddd;
+        background-color: #b9b9b9;
         padding: 0.3rem;
         display: block;
         text-decoration: none;
-        color: #454545;
+        color: #3b3b3b;
+        font-size: 0.9rem;
         border-radius: 0.2rem;
+        border: 1px solid #fff;
+        transition: all .12s;
+
+        &:hover {
+          background-color: #dadada;
+          border: 1px solid map-get($colors, primary);
+          color: map-get($colors, primary);
+        }
       }
     }
   }

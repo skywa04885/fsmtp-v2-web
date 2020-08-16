@@ -7,4 +7,8 @@ export default class Config
   public static buildURI = (path: string) => {
     return `https://${Config.hostname}:${Config.port}${path}`;
   };
+
+  public static setTitle = (title: string) => {
+    document.title = `${title} - Fannst Authorization`;
+  };
 };

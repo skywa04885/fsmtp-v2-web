@@ -1,16 +1,16 @@
 @import '../../theme.scss';
 
 .form-field {
-  margin-top: 0.6rem;
+  margin-top: 0.3rem;
 
   & > .form-field__flexarea {
     display: flex;
     align-items: center;
 
     & > .form-field__label {
-      flex: 2;
-      color: #3b3b3b;
-      font-size: 0.9rem;
+      width: 100px;
+      font-size: 0.8rem;
+      color: #222222;
 
       & > span {
         color: map-get($colors, primary);
@@ -18,11 +18,22 @@
     }
   
     & > .form-field__input {
-      flex: 4;
+      flex-grow: 1;
+      outline: none;
+      border: none;
+      background: none;
+      font-size: 0.8rem;
+      color: map-get($colors, primary);
       padding: 0.4rem;
-      border: 1px solid #b8b8b8;
-      background-color: #f2f2f2;
-      border-radius: 0.2rem;
+      border-bottom: 1px solid #c9c9c9;
+      transition: all .08s;
+      outline: none;
+      appearance: none;
+      -moz-appearance: none;
+
+      &:focus {
+        border-bottom: 1px solid map-get($colors, primary);
+      }
     }
   }
 
@@ -39,8 +50,16 @@
 .form-field_invalid {
   & > .form-field__flexarea {
     & > .form-field__input {
-      border: 1px solid map-get($colors, primary);
-      box-shadow: 0 0 0 2px rgba(map-get($colors, primary), 0.5);
+      border-bottom: 1px solid #ff2222;
+      color: #ff2222;
+
+      &:focus {
+        border-bottom: 1px solid #ff2222;
+      }
     }
+  }
+
+  & > .form-field__error {
+    color: #ff2222;
   }
 }

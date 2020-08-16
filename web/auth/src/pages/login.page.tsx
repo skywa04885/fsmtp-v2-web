@@ -111,6 +111,10 @@ export default class LoginPage extends React.Component<any, any> {
     return errors.username === null && errors.password === null;
   }
 
+  public componentDidMount = () => {
+    Config.setTitle('Login');
+  };
+
   public render = (): any =>
   {
     const { error, username, password, errors } = this.state;
@@ -149,7 +153,6 @@ export default class LoginPage extends React.Component<any, any> {
               label="Password"
               type="password"
             />
-            <hr />
             <DefaultButton type="submit" active={valid}>Login</DefaultButton>
           </fieldset>
         </form>
