@@ -94,6 +94,7 @@ export default class MailboxPage extends React.Component<any, any>
 
     MailboxesService.clearTrash().then(() => {
       hideLoader();
+      this.refresh();
     }).catch(err => {
       hideLoader();
       popup.current?.showText(err.toString(), 'Could not gather mailbox contents');
