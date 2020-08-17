@@ -3,10 +3,12 @@ import { NavLink } from 'react-router-dom';
 import { Mailbox } from '../../models/Mailbox.model';
 import { MailboxStatus } from '../../models/MailboxStatus.model';
 
-import './Sidebar.styles.scss';
 import { MailboxesService } from '../../services/Mailboxes.service';
-import { homedir } from 'os';
+import MusicPlayer from '../misc/MusicPlayer.component';
 import { popup } from '../..';
+
+import './Sidebar.styles.scss';
+
 
 interface SidebarProps {
   showLoader: (message: string) => {},
@@ -66,7 +68,7 @@ export class Sidebar extends React.Component<any, any> {
 
     return (
       <div className="sidebar" id="sidebar">
-        <div className="sidebar__ul">
+        <ul className="sidebar__ul">
           <li className="sidebar__ul__li">
             {/* Folder */}
             <div className="sidebar__ul__li__title">
@@ -130,7 +132,15 @@ export class Sidebar extends React.Component<any, any> {
               </li>
             </ul>
           </li>
-        </div>
+          <hr />
+          <li className="sidebar__ul__li">
+            {/* Music */}
+            <p className="sidebar__ul__li__title">
+              <strong>Lovely music:</strong>
+            </p>
+            <MusicPlayer />
+          </li>
+        </ul>
       </div>
     );
   };
