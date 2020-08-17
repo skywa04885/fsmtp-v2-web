@@ -10,6 +10,7 @@ import { popup } from '..';
 import './Mailbox.styles.scss';
 import { ToolbarButton } from '../components/nav/Toolbar.component';
 import { Mailbox } from '../models/Mailbox.model';
+import { MailboxStatus } from '../models/MailboxStatus.model';
 
 interface InboxPageProps {
   mailbox: string,
@@ -87,13 +88,14 @@ export default class MailboxPage extends React.Component<any, any>
   };
 
   public onClearTrashConfirm = (): void => {
-    const { showLoader, hideLoader } = this.props;
+    const { showLoader, hideLoader, updateMailboxStat } = this.props;
 
     popup.current?.hide()
     showLoader('Clearing trash');
 
     MailboxesService.clearTrash().then(() => {
       hideLoader();
+      updateMailboxStat("INBOX.Trash", 0);
       this.refresh();
     }).catch(err => {
       hideLoader();
@@ -111,8 +113,7 @@ export default class MailboxPage extends React.Component<any, any>
   public componentDidUpdate = (prev: InboxPageProps): void => {
     const { mailbox } = this.state;
     const newMailbox = this.props.match.params.mailbox;
-    if (mailbox !== newMailbox)
-    {
+    if (mailbox !== newMailbox) {
       this.updateToolbar();
       this.setState({
         mailbox: newMailbox

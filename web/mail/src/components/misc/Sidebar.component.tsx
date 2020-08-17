@@ -35,8 +35,9 @@ export class Sidebar extends React.Component<any, any> {
     if (!stat) {
       return console.error(`Could not update status for: ${mailbox}, not found !`);
     }
-
-    stat.s_Total += add;
+    
+    if (number === 0) stat.s_Total += add;
+    else stat.s_Total = 0;
 
     this.setState({});
   }
