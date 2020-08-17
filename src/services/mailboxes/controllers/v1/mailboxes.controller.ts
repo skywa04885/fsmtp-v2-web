@@ -308,6 +308,8 @@ export namespace Controllers
             // End -> mailbox.saveTotalAndUID
           }).catch(err => sendInternalServerError(req, res, next, err, __filename));
           // End -> MailboxStatus.get
+        } else {
+          res.send(200, 'success');
         }
       });
 
