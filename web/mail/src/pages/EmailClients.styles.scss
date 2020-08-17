@@ -1,0 +1,81 @@
+@import '../theme.scss';
+
+.email__clients {
+  background-color: rgba(#fff, .8);
+  border-bottom: 1px solid rgba(#fff, 0.5);
+  border-radius: $borderRadius;
+  padding: 1rem;
+  margin: 1rem;
+
+  & > img {
+    display: block;
+    max-width: 700px;
+    width: 100%;
+    border-radius: $borderRadius;
+  }
+
+  & > h1, & > h2 {
+    font-size: 1.2rem;
+    color: #222;
+    font-weight: bold;
+    margin-bottom: 0.4rem;
+  }
+
+  & > p {
+    color: #353535;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  & > hr {
+    border: none;
+    border-bottom: 1px solid #afafaf;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+  }
+
+  & > .email__clients-conninfo {
+    & > table {
+      margin-bottom: 1.2rem;
+
+      & > caption {
+        text-align: left;
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 0.4rem;
+        color: map-get($colors, primary);
+
+        &::before {
+          content: '* ';
+        }
+      }
+
+      & > tbody, & > thead {
+        text-align: left;
+
+        & > tr {
+          & > td, & > th {
+            border: 1px solid #a8a8a8;
+            padding: 0.4rem 1rem;
+          }
+
+          & > th {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #292929;
+          }
+
+          & > td {
+            color: map-get($colors, primary);;
+            font-size: 0.9rem;
+
+            & > span {
+              font-style: italic;
+            }
+          }
+        }
+      }
+      
+    }
+  }
+}

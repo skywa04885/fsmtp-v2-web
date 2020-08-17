@@ -16,6 +16,8 @@ import { popup } from '.';
 import { Sidebar } from './components/misc/Sidebar.component';
 
 import './app.scss';
+import { Email } from './models/Email.model';
+import EmailClients from './pages/EmailClients.page';
 
 const StartupSound = require('./static/startup.mp3');
 
@@ -23,17 +25,19 @@ interface AppProps {}
 
 class App extends React.Component {
   state: {
-    loading: boolean,
-    loaderMessage: string,
-    mailboxes: Mailbox[],
-    mailboxStats: MailboxStatus[],
-    ready: boolean
+    loading: boolean;
+    loaderMessage: string;
+    mailboxes: Mailbox[];
+    mailboxStats: MailboxStatus[];
+    ready: boolean;
   };
 
   private composeMenu: React.RefObject<Compose> = React.createRef<Compose>();
   private toolbar: React.RefObject<Toolbar> = React.createRef<Toolbar>();
   private loader: React.RefObject<Loader> = React.createRef<Loader>();
-  private mailboxPage: React.RefObject<MailboxPage> = React.createRef<MailboxPage>();
+  private mailboxPage: React.RefObject<MailboxPage> = React.createRef<
+    MailboxPage
+  >();
   private sidebar: React.RefObject<Sidebar> = React.createRef<Sidebar>();
 
   public constructor(props: AppProps) {
@@ -44,57 +48,68 @@ class App extends React.Component {
       loaderMessage: 'Loading page',
       mailboxes: [],
       mailboxStats: [],
-      ready: false
+      ready: false,
     };
   }
 
   public componentDidMount = (): void => {
     setTimeout(() => {
-      this.setState({
-        loaderMessage: 'Authenticating'
-      }, () => {
-        // Authenticates the user, and if not throws error
-        //  messge to the screen
-        AccountService.authenticate().then(success => {
-          if (!success) {
-            this.setState({
-              loaderMessage: 'Not logged in, redirecting'
-            }, () => {
-              setTimeout(() => {
-                window.location.href = '/auth/login';
-              }, 1600);
-            });
-          } else {
-            setTimeout(() => {
-              // Plays the startup sound
-              new Howl({
-                src: StartupSound
-              }).play();
+      this.setState(
+        {
+          loaderMessage: 'Authenticating',
+        },
+        () => {
+          // Authenticates the user, and if not throws error
+          //  messge to the screen
+          AccountService.authenticate()
+            .then((success) => {
+              if (!success) {
+                this.setState(
+                  {
+                    loaderMessage: 'Not logged in, redirecting',
+                  },
+                  () => {
+                    setTimeout(() => {
+                      window.location.href = '/auth/login';
+                    }, 1600);
+                  }
+                );
+              } else {
+                setTimeout(() => {
+                  // Plays the startup sound
+                  new Howl({
+                    src: StartupSound,
+                  }).play();
 
-              // Disables the splashscreen
-              this.setState({
-                loading: false
-              }, () => this.refresh());
-            }, 400);
-          }
-        }).catch(err => {
-          popup.current?.showText(err.toString(), 'Could not authenticate');
-        });
-      });
+                  // Disables the splashscreen
+                  this.setState(
+                    {
+                      loading: false,
+                    },
+                    () => this.refresh()
+                  );
+                }, 400);
+              }
+            })
+            .catch((err) => {
+              popup.current?.showText(err.toString(), 'Could not authenticate');
+            });
+        }
+      );
     }, 100);
   };
 
   public refresh = (): void => {
     this.sidebar?.current?.refresh().then(() => {
       this.setState({
-        ready: true
+        ready: true,
       });
     });
   };
 
   public toggleSidebar = (): void => {
     document.getElementById('sidebar')?.classList.toggle('sidebar__hidden');
-  }
+  };
 
   public render = (): any => {
     const { loading, loaderMessage, ready } = this.state;
@@ -110,9 +125,7 @@ class App extends React.Component {
       <React.Fragment>
         <div className="app">
           <Loader ref={this.loader} />
-          <Sidebar
-            ref={this.sidebar}
-          />
+          <Sidebar ref={this.sidebar} />
           <div className="app__wrapper">
             <Compose
               showLoader={this.loader?.current?.show}
@@ -121,38 +134,51 @@ class App extends React.Component {
               ref={this.composeMenu}
             />
             <Header toggleSidebar={this.toggleSidebar} />
-            <Toolbar
-              ref={this.toolbar}
-            />
+            <Toolbar ref={this.toolbar} />
             <div className="app__content">
               {!ready ? null : (
                 <Switch>
-                  <Route path="/mailbox/:mailbox" component={(props: any) => {
+                  <Route
+                    path="/mailbox/:mailbox"
+                    component={(props: any) => {
+                      return (
+                        <MailboxPage
+                          ref={this.mailboxPage}
+                          history={props.history}
+                          updateMailboxStat={
+                            this.sidebar?.current?.updateMailboxStat
+                          }
+                          match={props.match}
+                          setToolbar={this.toolbar?.current?.setToolbar}
+                          onCompose={this.composeMenu.current?.show}
+                          showLoader={this.loader?.current?.show}
+                          hideLoader={this.loader?.current?.hide}
+                        />
+                      );
+                    }}
+                  />
+                  <Route
+                    path="/mail/:mailbox/:bucket/:uuid"
+                    component={(props: any) => {
+                      return (
+                        <EmailPage
+                          match={props.match}
+                          history={props.history}
+                          updateMailboxStat={
+                            this.sidebar?.current?.updateMailboxStat
+                          }
+                          setToolbar={this.toolbar?.current?.setToolbar}
+                          showLoader={this.loader?.current?.show}
+                          hideLoader={this.loader?.current?.hide}
+                        />
+                      );
+                    }}
+                  />
+                  <Route path="/help/email-clients" component={(props: any) => {
                     return (
-                      <MailboxPage
-                        ref={this.mailboxPage}
-                        history={props.history}
-                        updateMailboxStat={this.sidebar?.current?.updateMailboxStat}
-                        match={props.match}
-                        setToolbar={this.toolbar?.current?.setToolbar}
-                        onCompose={this.composeMenu.current?.show}
-                        showLoader={this.loader?.current?.show}
-                        hideLoader={this.loader?.current?.hide}
-                      />
-                    );
+                      <EmailClients setToolbar={this.toolbar?.current?.setToolbar} />
+                    )
                   }} />
-                  <Route path="/mail/:mailbox/:bucket/:uuid" component={(props: any) => {
-                    return (
-                      <EmailPage
-                        match={props.match}
-                        history={props.history}
-                        updateMailboxStat={this.sidebar?.current?.updateMailboxStat}
-                        setToolbar={this.toolbar?.current?.setToolbar}
-                        showLoader={this.loader?.current?.show}
-                        hideLoader={this.loader?.current?.hide}
-                      />
-                    );
-                  }}/>
                   <Redirect to="/mailbox/INBOX" />
                 </Switch>
               )}
