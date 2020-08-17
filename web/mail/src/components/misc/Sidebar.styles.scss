@@ -1,9 +1,12 @@
 .sidebar {
   width: 220px;
-  transition: all .6s;
+  transition: all .08s;
   border-right: 1px solid rgba(#fff, 0.2);
+  overflow: hidden;
 
   & > .sidebar__ul {
+    width: 220px;
+
     & > hr {
       margin-top: 1rem;
       border: none;
@@ -86,4 +89,8 @@
       }
     }
   }
+}
+
+.sidebar__hidden {
+  width: 0px;
 }

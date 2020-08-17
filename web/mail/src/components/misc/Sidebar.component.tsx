@@ -58,7 +58,6 @@ export class Sidebar extends React.Component<any, any> {
         resolve();
       });
     });
-    const { hideLoader, showLoader } = this.props;
   };
 
   public render = (): any => {

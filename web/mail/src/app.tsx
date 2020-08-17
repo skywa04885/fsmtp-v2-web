@@ -93,7 +93,7 @@ class App extends React.Component {
   };
 
   public toggleSidebar = (): void => {
-    document.getElementById('sidebar')?.toggleAttribute('hidden');
+    document.getElementById('sidebar')?.classList.toggle('sidebar__hidden');
   }
 
   public render = (): any => {
@@ -136,6 +136,8 @@ class App extends React.Component {
                         match={props.match}
                         setToolbar={this.toolbar?.current?.setToolbar}
                         onCompose={this.composeMenu.current?.show}
+                        showLoader={this.loader?.current?.show}
+                        hideLoader={this.loader?.current?.hide}
                       />
                     );
                   }} />

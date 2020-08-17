@@ -9,6 +9,7 @@ import { reject, auto } from 'async';
 import { EmailRaw } from '../../../../models/mail/email-raw.model';
 import { MailboxStatus } from '../../../../models/mail/mailbox-status.model';
 import { sendInternalServerError } from '../../../../helpers/errors.helper';
+import { Cassandra } from '../../../../helpers/database.helper';
 
 export namespace Controllers
 {
@@ -251,6 +252,60 @@ export namespace Controllers
       EmailShortcut.move(authObj.domain, authObj.uuid, req.body.mailbox, uuid, req.body.mailbox_target, authObj.bucket).then(() => {
         res.send(200, 'success');
       }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+    }).catch(err => {});
+  };
+
+  export const POST_EraseTrash = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+    Bearer.authRequest(req, res, next).then(authObj => {
+      const baseQuery: string = `SELECT e_flags, e_mailbox, e_email_uuid, e_bucket
+      FROM ${Cassandra.keyspace}.email_shortcuts 
+      WHERE e_domain=? AND e_owners_uuid=? ALLOW FILTERING`;
+
+      // Loops over all the emails from a users inbox and searches for the
+      //  deleted ones, if such one is found add the query to the final batch
+      //  query array.
+
+      const stream = Cassandra.client.stream(baseQuery, [authObj.domain, authObj.uuid], {
+        autoPage: true,
+        prepare: true
+      });
+
+      const queries: {
+        query: string,
+        params: any[]
+      }[] = [];
+      stream.on('readable', () => {
+        let row: any;
+        while (row = (<any>stream).read()) {
+          if ((row['e_flags'] & EmailFlags.Deleted) !== EmailFlags.Deleted) continue;
+          
+          queries.push({
+            query: `DELETE FROM ${Cassandra.keyspace}.email_shortcuts
+            WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`,
+            params: [authObj.domain, authObj.uuid, row['e_mailbox'], row['e_email_uuid']]
+          });
+
+          queries.push({
+            query: `DELETE FROM ${Cassandra.keyspace}.raw_emails
+            WHERE e_domain=? AND e_owners_uuid=? AND e_bucket=? AND e_email_uuid=?`,
+            params: [authObj.domain, authObj.uuid, row['e_bucket'], row['e_email_uuid']]
+          });
+        }
+      });
+
+      stream.on('close', err => {
+        Cassandra.client.batch(queries, {
+          prepare: true
+        }).then(() => res.send(200, 'success'))
+        .catch(err => sendInternalServerError(req, res, next, err, __filename));
+      });
+
+      stream.on('error', err => {
+        sendInternalServerError(req, res, next, err, __filename);
+      });
     }).catch(err => {});
   };
 }

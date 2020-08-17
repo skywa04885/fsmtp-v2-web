@@ -46,6 +46,24 @@ export class MailboxesService {
     });
   };
 
+  public static clearTrash = (): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      const url: string = Config.buildURL('/erase-trash', MailboxesService.port);
+      const options: any = {
+        headers: Object.assign(Config.defaultHeaders, {
+          'Authorization': AccountService.buildBearer()
+        })
+      };
+
+      Axios.post(url, null, options).then(response => {
+        if (response.status !== 200)
+          return reject(new Error(`${response.status}: ${response.statusText}`));
+
+        resolve();
+      }).catch(err => reject(err));
+    });
+  };
+
   public static gatherContents = (mailbox: string, page: number): Promise<EmailShortcut[]> => {
     return new Promise<EmailShortcut[]>((resolve, reject) => {
       // Calculates the pagination index, each page is 50 next

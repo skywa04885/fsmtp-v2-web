@@ -8,6 +8,8 @@ import Config from '../Config';
 import { popup } from '..';
 
 import './Mailbox.styles.scss';
+import { ToolbarButton } from '../components/nav/Toolbar.component';
+import { Mailbox } from '../models/Mailbox.model';
 
 interface InboxPageProps {
   mailbox: string,
@@ -38,10 +40,11 @@ export default class MailboxPage extends React.Component<any, any>
     };
   }
 
-  public componentDidMount = (): void => {
+  public updateToolbar = (): void => {
     const { setToolbar, onCompose } = this.props;
+    const { mailbox } = this.props.match.params;
 
-    setToolbar([
+    let toolbarButtons: ToolbarButton[] = [
       {
         icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>,
         title: 'Refresh current mailbox',
@@ -54,8 +57,51 @@ export default class MailboxPage extends React.Component<any, any>
         key: 'mailbox_compose',
         callback: onCompose
       }
-    ]);
+    ];
 
+    if (mailbox === "INBOX.Trash") {
+      toolbarButtons.push({
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M0 0h24v24H0V0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>,
+        title: 'Clear trash',
+        key: 'mailbox_clear',
+        callback: this.onTrashClear
+      });
+    }
+
+    setToolbar(toolbarButtons);
+  }
+
+  public onTrashClear = (): void => {
+    popup.current?.showButtons([
+      {
+        text: 'Clear trash',
+        onClick: this.onClearTrashConfirm,
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M0 0h24v24H0V0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      },
+      {
+        text: 'Cancel',
+        onClick: () => popup.current?.hide(),
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>
+      }
+    ], 'Are you sure ?')
+  };
+
+  public onClearTrashConfirm = (): void => {
+    const { showLoader, hideLoader } = this.props;
+
+    popup.current?.hide()
+    showLoader('Clearing trash');
+
+    MailboxesService.clearTrash().then(() => {
+      hideLoader();
+    }).catch(err => {
+      hideLoader();
+      popup.current?.showText(err.toString(), 'Could not gather mailbox contents');
+    });
+  };
+
+  public componentDidMount = (): void => {
+    this.updateToolbar();
     this.setState({
       mailbox: this.props.match.params.mailbox
     }, () => this.refresh());
@@ -66,6 +112,7 @@ export default class MailboxPage extends React.Component<any, any>
     const newMailbox = this.props.match.params.mailbox;
     if (mailbox !== newMailbox)
     {
+      this.updateToolbar();
       this.setState({
         mailbox: newMailbox
       }, () => this.refresh());

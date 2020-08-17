@@ -27,5 +27,9 @@ export namespace Routes
     server.get('/get/mailboxes/status', restify.plugins.conditionalHandler([
       {version: '1.0.0', handler: MailboxesControllers.GET_MailboxStats}
     ]));
+
+    server.post('/erase-trash', restify.plugins.conditionalHandler([
+      {version: '1.0.0', handler: MailboxesControllers.POST_EraseTrash}
+    ]));
   };
 }
