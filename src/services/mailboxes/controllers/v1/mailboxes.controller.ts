@@ -297,10 +297,18 @@ export namespace Controllers
       });
 
       stream.on('close', err => {
-        Cassandra.client.batch(queries, {
-          prepare: true
-        }).then(() => res.send(200, 'success'))
-        .catch(err => sendInternalServerError(req, res, next, err, __filename));
+        if (queries.length > 0) {
+          MailboxStatus.get(authObj.bucket, authObj.domain, authObj.uuid, "INBOX.Trash").then(mailbox => {
+            mailbox.s_Total = 0;
+            mailbox.saveTotalAndUID("INBOX.Trash").then(() => {
+              Cassandra.client.batch(queries, {prepare: true})
+              .then(() => res.send(200, 'success'))
+              .catch(err => sendInternalServerError(req, res, next, err, __filename));
+            }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+            // End -> mailbox.saveTotalAndUID
+          }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+          // End -> MailboxStatus.get
+        }
       });
 
       stream.on('error', err => {
