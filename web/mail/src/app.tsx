@@ -18,6 +18,7 @@ import { Sidebar } from './components/misc/Sidebar.component';
 import './app.scss';
 import { Email } from './models/Email.model';
 import EmailClients from './pages/EmailClients.page';
+import DeveloperInfo from './pages/DeveloperInfo.page';
 
 const StartupSound = require('./static/startup.mp3');
 
@@ -177,6 +178,15 @@ class App extends React.Component {
                   <Route path="/help/email-clients" component={(props: any) => {
                     return (
                       <EmailClients setToolbar={this.toolbar?.current?.setToolbar} />
+                    )
+                  }} />
+                  <Route path="/help/developer-info" component={(props: any) => {
+                    return (
+                      <DeveloperInfo
+                        setToolbar={this.toolbar?.current?.setToolbar}
+                        showLoader={this.loader?.current?.show}
+                        hideLoader={this.loader?.current?.hide}
+                      />
                     )
                   }} />
                   <Redirect to="/mailbox/INBOX" />

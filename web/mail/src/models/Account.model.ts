@@ -94,4 +94,27 @@ export class Account {
       a_Type: parseInt(map['a_type'])
     });
   };
+
+  public getObject = (): any => {
+    return {
+      FullName: this.a_FullName,
+      Username: this.a_Username,
+      Domain: this.a_Domain,
+      CreationDate: this.a_CreationDate,
+      BirthDate: this.a_BirthDate,
+      Bucket: this.a_Bucket,
+      Gas: this.a_Gas,
+      Address: this.a_Address,
+      Country: this.a_Country,
+      Region: this.a_Region,
+      City: this.a_City,
+      Phone: this.a_Phone,
+      Flags: this.a_Flags.toString(2),
+      UUID: this.a_UUID,
+      StorageUsedInBytes: this.a_StorageUsedInBytes,
+      StorageMaxInBytes: this.a_StorageMaxInBytes,
+      PictureURI: this.a_PictureURI,
+      Type: this.a_Type,
+    }
+  };
 }

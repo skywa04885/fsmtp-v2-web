@@ -7,6 +7,7 @@ import { MailboxesService } from "../../services/Mailboxes.service";
 import MusicPlayer from "../misc/MusicPlayer.component";
 import { popup } from "../..";
 
+import Fannst from '../../static/fannst-banner-light.png';
 import "./Sidebar.styles.scss";
 
 interface SidebarProps {
@@ -53,12 +54,10 @@ export class Sidebar extends React.Component<any, any> {
         .then((mailboxes) => {
           MailboxesService.gatherMailboxStats(mailboxes)
             .then((mailboxStats) => {
-              this.setState(
-                {
-                  mailboxes,
-                  mailboxStats,
-                },
-                () => resolve()
+              this.setState({
+                mailboxes,
+                mailboxStats
+              }, () => resolve()
               );
             })
             .catch((err) => {
@@ -81,28 +80,12 @@ export class Sidebar extends React.Component<any, any> {
 
     return (
       <div className="sidebar" id="sidebar">
+        <img src={Fannst} />
         <ul className="sidebar__ul">
           <li className="sidebar__ul__li">
             {/* Folder */}
             <div className="sidebar__ul__li__title">
               <strong>Folders: </strong>
-              <div>
-                <button
-                  title="Add user defined folder"
-                  className="sidebar__ul__li__title-btn"
-                  type="button"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    width="24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
-                  </svg>
-                </button>
-              </div>
             </div>
             <ul className="sidebar__ul__li__folders">
               {mailboxes.map((mailbox: Mailbox) => {
@@ -143,7 +126,7 @@ export class Sidebar extends React.Component<any, any> {
             <ul className="sidebar__ul__li__folders">
               <li>
                 <NavLink
-                  to="/other/devinfo"
+                  to="/help/developer-info"
                   className="sidebar__folder"
                   activeClassName="sidebar__folder-active"
                 >

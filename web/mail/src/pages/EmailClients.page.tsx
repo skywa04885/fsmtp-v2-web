@@ -15,7 +15,7 @@ class EmailClients extends React.Component<any, any> {
     super(props);
   }
 
-  componentDidMount = () => {
+  public componentDidMount = () => {
     const { setToolbar } = this.props;
     Config.updateTitle('Email Clients');
     setToolbar([]);

@@ -28,12 +28,24 @@ export class MailboxStatus {
   public static fromMap = (map: any): MailboxStatus => {
     return new MailboxStatus({
       s_Unseen: map['s_unseen'],
-      s_NextUUID: map['s_next_uuid'],
+      s_NextUUID: map['s_next_uid'],
       s_Recent: map['s_recent'],
       s_Total: map['s_total'],
       s_Flags: map['s_flags'],
       s_PermaFlags: map['s_perma_flags'],
       s_Path: map['s_path']
     });
+  };
+
+  public getObject = (): any => {
+    return {
+      Unseen: this.s_Unseen,
+      NextUUID: this.s_NextUUID,
+      Recent: this.s_Recent,
+      Total: this.s_Total,
+      Flags: this.s_Flags.toString(2),
+      PermaFlags: this.s_PermaFlags.toString(2),
+      Path: this.s_Path
+    };
   };
 };

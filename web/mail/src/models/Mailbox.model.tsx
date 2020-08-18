@@ -106,4 +106,16 @@ export class Mailbox {
       else return 'Inbox';
     } else return path;
   }
+
+  public getObject = (): any => {
+    return {
+      Bucket: this.e_Bucket,
+      MessageCount: this.e_MessageCount,
+      Domain: this.e_Domain,
+      MailboxPath: this.e_MailboxPath,
+      MailboxStand: this.e_MailboxStand,
+      Subscribed: this.e_Subscribed,
+      Flags: this.e_Flags.toString(2)
+    };
+  };
 }

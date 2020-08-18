@@ -4,6 +4,16 @@
   border-right: 1px solid rgba(#fff, 0.2);
   overflow: hidden;
 
+  & > img {
+    width: 200px;
+    display: block;
+    margin-top: 1rem;
+    user-select: none;
+    margin-bottom: 2rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   & > .sidebar__ul {
     width: 280px;
 
@@ -16,6 +26,7 @@
     & > .sidebar__ul__li {
       & > .sidebar__ul__li__title {
         margin: 1rem;
+        user-select: none;
         color: #fff;
         font-size: 0.8rem;
 
@@ -75,6 +86,7 @@
               fill: #fff;
             }
 
+            user-select: none;
             margin-right: 1rem;
             color: #fff;
             padding: 0.4rem 1rem;

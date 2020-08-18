@@ -55,10 +55,14 @@ table {
 body, html {
   font-family: 'Open Sans', sans-serif;
   background-color: #2c2c2c;
-	background-image: url('static/background.jpg');
+	background-image: url('https://source.unsplash.com/random');
 	background-size: cover;
 	background-repeat: no-repeat;
-	background-attachment: fixed;
+	background-attachment: absolute;
+	background-position: center;
+	background-color: rgba(0, 0, 0, 0.664);
+	background-blend-mode: darken;
+	min-height: 100vh;
 }
 
 .app {
