@@ -250,9 +250,6 @@ export default class EmailPage extends React.Component<any, any> {
     showLoader(`Flagging message as deleted`);
     MailboxesService.unflag(mailbox, uuid, EmailFlags.Deleted).then(() => {
       hideLoader();
-      updateMailboxStat(mailbox, -1);
-      updateMailboxStat("INBOX.Trash", 1);
-      history.push(`/mailbox/${mailbox}`);
     }).catch(err => {
       popup.current?.showText(err.toString(), 'Could not move message');
       hideLoader();

@@ -127,7 +127,7 @@ export class MailboxesService {
 
   public static unflag = (mailbox: string, emailUUID: string, flag: number): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      const url: string = Config.buildURL('/email/unflag', MailboxesService.port);
+      const url: string = Config.buildURL('/email/flag', MailboxesService.port);
       const options: any = {
         headers: Object.assign(Config.defaultHeaders, {
           'Authorization': AccountService.buildBearer()

@@ -12,6 +12,10 @@ export namespace Routes
       {version: '1.0.0', handler: MailboxesControllers.GET_GetMailboxContent}
     ]));
 
+    server.get('/get/shortcut', restify.plugins.conditionalHandler([
+      {version: '1.0.0', handler: MailboxesControllers.GET_Shortcut}
+    ]));
+
     server.get('/get/email', restify.plugins.conditionalHandler([
       {version: '1.0.0', handler: MailboxesControllers.GET_GetEmail}
     ]));

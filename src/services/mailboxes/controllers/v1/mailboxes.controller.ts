@@ -37,6 +37,44 @@ export namespace Controllers
     }).catch(err => {});
   };
 
+  export const GET_Shortcut = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+
+    let mailbox: any;
+    if (req.headers['mailbox']) {
+      mailbox = req.headers['mailbox'].toString();
+    } else return next(new errors.InvalidHeaderError({}, "Mailbox header is required"));
+
+    let email_uuid: any;
+    if (req.headers['email-uuid']) {
+      try {
+        email_uuid = cassandraDriver.types.TimeUuid.fromString(req.headers['email-uuid'].toString());
+      } catch (e) {
+        return next(new errors.InvalidHeaderError({}, "Invalid header value for Email-UUID"));
+      }
+    } else return next(new errors.InvalidHeaderError({}, "Email-UUID header is required"));
+
+    Bearer.authRequest(req, res, next).then(authObj => {
+      EmailShortcut.get(authObj.domain, authObj.uuid, mailbox, email_uuid).then(shortcut => {
+        res.json({
+          e_domain: shortcut.e_Domain,
+          e_subject: shortcut.e_Subject,
+          e_preview: shortcut.e_Preview,
+          e_owners_uuid: shortcut.e_OwnersUUID,
+          e_email_uuid: shortcut.e_EmailUUID,
+          e_uid: shortcut.e_UID,
+          e_flags: shortcut.e_Flags,
+          e_bucket: shortcut.e_Bucket,
+          e_mailbox: shortcut.e_Mailbox,
+          e_size_octets: shortcut.e_SizeOctets,
+          e_from: shortcut.e_From
+        });
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+    }).catch(err => {});
+  };
+
   export const GET_GetMailboxContent = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next
