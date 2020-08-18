@@ -246,9 +246,26 @@ export default class EmailPage extends React.Component<any, any> {
   public restoreFromTrash = (): void => {
     const { uuid, mailbox } = this.props.match.params;
     const { history, showLoader, hideLoader, updateMailboxStat } = this.props;
+    
+    let args: any = {};
+
+    let splitted: string[] = document.location.search.substr(1).split('&');
+    splitted.forEach(elem => {
+      let key: string, value: string;
+
+      key = elem.substring(0, elem.indexOf('='));
+      value = elem.substr(elem.indexOf('=') + 1);
+
+      args[key] = value;
+    });
+
+    if (!args['trash_orig_mb']) return;
 
     showLoader(`Flagging message as deleted`);
-    MailboxesService.unflag(mailbox, uuid, EmailFlags.Deleted).then(() => {
+    MailboxesService.unflag(args['trash_orig_mb'], uuid, EmailFlags.Deleted).then(() => {
+      updateMailboxStat(args['trash_orig_mb'], 1);
+      updateMailboxStat("INBOX.Trash", -1);
+      this.goBack();
       hideLoader();
     }).catch(err => {
       popup.current?.showText(err.toString(), 'Could not move message');

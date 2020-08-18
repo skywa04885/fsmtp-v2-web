@@ -141,10 +141,14 @@ export default class MailboxPage extends React.Component<any, any>
     }, 100);
   };
   
-  public onClick = (bucket: number, uuid: string): void => {
+  public onClick = (bucket: number, uuid: string, mb?: string): void => {
     const { history } = this.props;
     const { mailbox } = this.state;
-    history.push(`/mail/${mailbox}/${bucket}/${uuid}`);
+    if (mailbox === 'INBOX.Trash') {
+      history.push(`/mail/${mailbox}/${bucket}/${uuid}?trash_orig_mb=${mb}`);
+    } else {
+      history.push(`/mail/${mailbox}/${bucket}/${uuid}`);
+    }
   };
 
   public render = (): any => {
@@ -164,7 +168,7 @@ export default class MailboxPage extends React.Component<any, any>
               shortcuts.map(shortcut => {
                 return (
                   <EmailShortcutElement
-                    onClick={() => this.onClick(shortcut.e_Bucket, shortcut.e_EmailUUID)}
+                    onClick={() => this.onClick(shortcut.e_Bucket, shortcut.e_EmailUUID, shortcut.e_Mailbox)}
                     key={shortcut.e_UID}
                     shortcut={shortcut}
                   />
