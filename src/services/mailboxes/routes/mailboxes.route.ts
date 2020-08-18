@@ -23,6 +23,9 @@ export namespace Routes
     server.post('/email/flag', restify.plugins.conditionalHandler([
       {version: '1.0.0', handler: MailboxesControllers.POST_FlagEmail}
     ]));
+    server.post('/email/unflag', restify.plugins.conditionalHandler([
+      {version: '1.0.0', handler: MailboxesControllers.POST_UnFlagEmail}
+    ]));
 
     server.get('/get/mailboxes/status', restify.plugins.conditionalHandler([
       {version: '1.0.0', handler: MailboxesControllers.GET_MailboxStats}

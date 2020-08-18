@@ -37,8 +37,11 @@
     }
 
     & > .popup__content__list {
+      max-height: 400px;
+      overflow-y: auto;
+
       & > li {
-        padding: .3rem .6rem;
+        padding: .7rem .8rem;
         border-radius: $borderRadius;
         cursor: pointer;
         transition: all .08s;

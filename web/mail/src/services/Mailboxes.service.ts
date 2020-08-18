@@ -125,6 +125,42 @@ export class MailboxesService {
     });
   };
 
+  public static unflag = (mailbox: string, emailUUID: string, flag: number): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      const url: string = Config.buildURL('/email/unflag', MailboxesService.port);
+      const options: any = {
+        headers: Object.assign(Config.defaultHeaders, {
+          'Authorization': AccountService.buildBearer()
+        })
+      };
+
+      let flagStr: string;
+      switch (flag)
+      {
+        case EmailFlags.Seen:
+          flagStr = 'seen';
+          break;
+        case EmailFlags.Deleted:
+          flagStr = 'deleted';
+          break;
+        default: return reject('Flag not implemented');
+      }
+
+      const fields: any = {
+        email_uuid: emailUUID,
+        mailbox: mailbox,
+        flag: flagStr
+      };
+
+      Axios.post(url, fields, options).then(response => {
+        if (response.status !== 200)
+          return reject(new Error(`${response.status}: ${response.statusText}`));
+
+        resolve();
+      }).catch(err => reject(err));
+    });
+  };
+
   public static move = (mailbox: string, emailUUID: string, mailboxTarget: string): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
       setTimeout(() => {

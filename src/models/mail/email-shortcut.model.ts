@@ -130,6 +130,46 @@ export class EmailShortcut {
     });
   };
 
+  public static clearFlag = (
+    e_Domain: string, e_OwnersUUID: cassandraDriver.types.TimeUuid,
+    e_Mailbox: string, e_EmailUUID: cassandraDriver.types.TimeUuid,
+    e_Flag: number
+  ): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+
+      // Gets the previous flags so we can then OR the new ones to
+      //  it, because we want to keep the previous ones too
+
+      let query: string = `SELECT e_flags FROM ${Cassandra.keyspace}.email_shortcuts
+      WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`;
+
+      Cassandra.client.execute(query, [
+        e_Domain, e_OwnersUUID, e_Mailbox, e_EmailUUID
+      ], {
+        prepare: true
+      }).then(res => {
+        if (res.rows.length <= 0)
+          return reject(new Error('Could not find message'));
+
+        // OR's the flags, and updates the record in apache cassandra, i know
+        //  this is not very efficient, but i do not care.
+
+        let flags: number = res.rows[0]['e_flags'];
+        flags &= ~e_Flag;
+
+        query = `UPDATE ${Cassandra.keyspace}.email_shortcuts
+        SET e_flags=?
+        WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`;
+
+        Cassandra.client.execute(query, [
+          flags, e_Domain, e_OwnersUUID, e_Mailbox, e_EmailUUID
+        ], {
+          prepare: true
+        }).then(() => resolve()).catch(err => reject(err));
+      }).catch(err => reject(err));
+    });
+  };
+
   public static get = (
     e_Domain: string, e_OwnersUUID: cassandraDriver.types.TimeUuid,
 		e_Mailbox: string, e_EmailUUID: cassandraDriver.types.TimeUuid

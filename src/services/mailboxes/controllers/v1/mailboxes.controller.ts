@@ -178,6 +178,70 @@ export namespace Controllers
     });
   };
 
+  export const POST_UnFlagEmail = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+    if (!validateRequest(req, res, next, {
+      properties: {
+        flag: {
+          type: 'string',
+          required: true
+        },
+        mailbox: {
+          type: 'string',
+          required: true
+        },
+        email_uuid: {
+          type: 'string',
+          required: true
+        }
+      }
+    })) return;
+
+    // Checks if the flag is valid, if so store the binary
+    //  value of the flag, so we can later set it
+    let flag: number;
+    switch (req.body.flag.toString()) {
+      case 'seen':
+        flag = EmailFlags.Seen;
+        break;
+      case 'deleted':
+        flag = EmailFlags.Deleted;
+        break;
+      default: return next(new errors.InvalidArgumentError());
+    }
+
+    // Parses the email uuid, and throws error
+    //  if this does not work out
+    let uuid: cassandraDriver.types.TimeUuid;
+    try {
+      uuid = cassandraDriver.types.TimeUuid.fromString(req.body.email_uuid);
+    } catch (err) {
+      return sendInternalServerError(req, res, next, err, __filename);
+    }
+
+    Bearer.authRequest(req, res, next).then(authObj => {
+      EmailShortcut.clearFlag(
+        authObj.domain, authObj.uuid, 
+        req.body.mailbox, uuid, flag
+      ).then(() => {
+
+        // Checks if we need to perform any further operations
+        if (flag === EmailFlags.Deleted) {
+          MailboxStatus.removeOneEmail(authObj.bucket, authObj.domain, authObj.uuid, 'INBOX.Trash').then(() => {
+            MailboxStatus.addOneEmail(authObj.bucket, authObj.domain, authObj.uuid, req.body.mailbox).then(() => {
+              res.send(200, 'success');
+            }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+          }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+        } else {
+          res.send(200, 'success');
+        }
+      })
+      .catch(err => sendInternalServerError(req, res, next, err, __filename));
+    });
+  };
+
   export const GET_MailboxStats = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next

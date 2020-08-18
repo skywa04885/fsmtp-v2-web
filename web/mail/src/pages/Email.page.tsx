@@ -62,7 +62,7 @@ export default class EmailPage extends React.Component<any, any> {
         icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14zM6 7v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm8 7v4h-4v-4H8l4-4 4 4h-2z"/></svg>,
         title: 'Restore message',
         key: 'email_restore',
-        callback: null
+        callback: this.restoreFromTrash
       });
     } else if (mailbox !== 'INBOX.Archive') {
       elements.push({
@@ -71,12 +71,19 @@ export default class EmailPage extends React.Component<any, any> {
         key: 'email_archive',
         callback: () => this.onMoveOperation('INBOX.Archive')
       });
+
+      elements.push({
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>,
+        title: 'Move message',
+        key: 'email_move',
+        callback: this.onCustomMove
+      });
     } else if (mailbox === 'INBOX.Archive') {
       elements.push({
         icon: <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24" viewBox="0 0 24 24" width="24"><g><rect fill="none" height="24" width="24" x="0"/></g><g><g><g><path d="M20.55,5.22l-1.39-1.68C18.88,3.21,18.47,3,18,3H6C5.53,3,5.12,3.21,4.85,3.55L3.46,5.22C3.17,5.57,3,6.01,3,6.5V19 c0,1.1,0.89,2,2,2h14c1.1,0,2-0.9,2-2V6.5C21,6.01,20.83,5.57,20.55,5.22z M12,9.5l5.5,5.5H14v2h-4v-2H6.5L12,9.5z M5.12,5 l0.82-1h12l0.93,1H5.12z"/></g></g></g></svg>,
         title: 'Unarchive message',
         key: 'email_unarchive',
-        callback: null
+        callback: this.onCustomMove
       });
     }
 
@@ -156,6 +163,18 @@ export default class EmailPage extends React.Component<any, any> {
     }
   };
 
+  public onCustomMove = (): void => {
+    MailboxesService.gatherMailboxes().then(mailboxes => {
+      popup.current?.showList(mailboxes.map(mailbox => {
+        return {
+          text: mailbox.e_MailboxPath,
+          onClick: () => this.onMoveOperation(mailbox.e_MailboxPath),
+          icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+        }
+      }), 'Move to folder')
+    });
+  };
+
   public showDetails = (): void => {
     const { email } = this.state;
     const { mailbox, uuid, bucket } = this.props.match.params;
@@ -223,6 +242,22 @@ export default class EmailPage extends React.Component<any, any> {
       </div>
     ), 'Email Details')
   };
+
+  public restoreFromTrash = (): void => {
+    const { uuid, mailbox } = this.props.match.params;
+    const { history, showLoader, hideLoader, updateMailboxStat } = this.props;
+
+    showLoader(`Flagging message as deleted`);
+    MailboxesService.unflag(mailbox, uuid, EmailFlags.Deleted).then(() => {
+      hideLoader();
+      updateMailboxStat(mailbox, -1);
+      updateMailboxStat("INBOX.Trash", 1);
+      history.push(`/mailbox/${mailbox}`);
+    }).catch(err => {
+      popup.current?.showText(err.toString(), 'Could not move message');
+      hideLoader();
+    });
+  }
 
   public onDeleteOperation = (): void => {
     const { uuid, mailbox } = this.props.match.params;
