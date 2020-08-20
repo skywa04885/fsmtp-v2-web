@@ -1,13 +1,13 @@
 @import '../theme.scss';
 
 .compose-fscreen {
-  width: calc(100% - 220px - 2rem);
+  width: calc(100% - 280px - 2rem);
   height: calc(100% - 9rem);
 
   position: fixed;
   right: 1rem;
   top: 8rem;
-  left: calc(220px + 1rem);
+  left: calc(280px + 1rem);
   bottom: 1rem;
 
   border: 1px solid #fff;
@@ -22,6 +22,87 @@
   bottom: 0;
   top: calc(100vh - 500px);
   left: calc(100vw - 500px - 1rem);
+}
+
+.dark-mode__compose {
+  border: 1px solid rgba(#8b8b8b, 0.5);
+
+  & > .compose__editor {
+    background-color: #242424;
+
+    & > .compose__editor-wrapper {
+      background-color: #fff;
+      border: 1px solid #cacaca;
+      border-radius: $borderRadius;
+    }
+  }
+
+  & > .compose__targets {
+    background-color: #242424;
+
+    & > .compose__targets-form {
+      & > div {
+        & > label {
+          color: #a1a1a1;
+        }
+  
+        & > input {
+          color: #fff;
+          border: none;
+          border-bottom: 1px solid #494949;
+        }
+      }
+    }
+  }
+
+  & > .compose__buttons {
+    background-color: #242424;
+
+    & > .compose__buttons__btn {
+      color: #fefefe;
+
+      &:hover {
+        background-color: #fff;
+        color: #242424;
+      }
+    }
+  }
+}
+
+.light-mode__compose {
+  & > .compose__editor {
+    background-color: #fff;
+  }
+
+  & > .compose__targets {
+    background-color: #fff;
+
+    & > .compose__targets-form {
+      & > div {
+        & > label {
+          color: #222222;
+        }
+  
+        & > input {
+          border: none;
+          color: map-get($colors, primary);
+          border-bottom: 1px solid #eeeeee;
+        }
+      }
+    }
+  }
+
+  & > .compose__buttons {
+    background-color: #fff;
+
+    & > .compose__buttons__btn {
+      color: #fefefe;
+
+      &:hover {
+        background-color: #222;
+      }
+    }
+  }
 }
 
 .compose {
@@ -91,7 +172,6 @@
     flex-grow: 1;
     position: relative;
     height: 100%;
-    background-color: #fff;
 
     & > .compose__editor-wrapper {
       position: absolute;
@@ -108,7 +188,6 @@
     padding-right: 0.4rem;
     padding-bottom: 0.8rem;
     padding-top: 0.8rem;
-    background-color: #fff;
 
     & > .compose__targets-form {
       & > div {
@@ -118,18 +197,14 @@
         & > label {
           width: 100px;
           font-size: 0.8rem;
-          color: #222222;
         }
   
         & > input {
           flex-grow: 1;
           outline: none;
-          border: none;
           background: none;
           font-size: 0.8rem;
-          color: map-get($colors, primary);
           padding: 0.4rem;
-          border-bottom: 1px solid #eeeeee;
           transition: all .08s;
 
           &:focus {
@@ -142,7 +217,6 @@
 
   & > .compose__buttons {
     padding: 0.4rem 0.4rem;
-    background-color: #fff;
 
     & > .compose__buttons__btn {
       display: inline-block;
@@ -155,12 +229,7 @@
       padding: 0.5rem 1.2rem;
       font-size: 0.7rem;
       font-weight: bold;
-      color: #fefefe;
       border-radius: $borderRadius;
-
-      &:hover {
-        background-color: #222;
-      }
     }
   }
 }

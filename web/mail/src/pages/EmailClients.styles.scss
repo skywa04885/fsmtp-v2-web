@@ -1,8 +1,63 @@
 @import '../theme.scss';
 
-.email__clients {
+.dark-mode__email__clients {
+  background-color: #242424;
+  border: 1px solid rgba(#4e4e4e, 0.5);
+
+  & > h1, & > h2 {
+    color: #fff;
+  }
+
+  & > p {
+    color: #b4b4b4;
+  }
+
+  & > .email__clients-conninfo {
+    & > table {
+      & > tbody, & > thead {
+        & > tr {
+          & > td, & > th {
+            border: 1px solid #3a3a3a;
+          }
+
+          & > th {
+            color: #e7e7e7;
+          }
+        }
+      }
+    }
+  }
+}
+
+.light-mode__email__clients {
   background-color: rgba(#fff, .8);
-  border-bottom: 1px solid rgba(#fff, 0.5);
+
+  & > h1, & > h2 {
+    color: #222;
+  }
+
+  & > p {
+    color: #353535;
+  }
+
+  & > .email__clients-conninfo {
+    & > table {
+      & > tbody, & > thead {
+        & > tr {
+          & > td, & > th {
+            border: 1px solid #a8a8a8;
+          }
+
+          & > th {
+            color: #292929;
+          }
+        }
+      }
+    }
+  }
+}
+
+.email__clients {
   border-radius: $borderRadius;
   padding: 1rem;
   margin: 1rem;
@@ -16,20 +71,17 @@
 
   & > h1, & > h2 {
     font-size: 1.2rem;
-    color: #222;
     font-weight: bold;
     margin-bottom: 0.4rem;
   }
 
   & > p {
-    color: #353535;
     margin-bottom: 1rem;
     font-size: 0.9rem;
   }
 
   & > hr {
     border: none;
-    border-bottom: 1px solid #afafaf;
     margin-bottom: 1rem;
     margin-top: 1rem;
   }
@@ -55,14 +107,12 @@
 
         & > tr {
           & > td, & > th {
-            border: 1px solid #a8a8a8;
             padding: 0.4rem 1rem;
           }
 
           & > th {
             font-size: 0.9rem;
             font-weight: bold;
-            color: #292929;
           }
 
           & > td {

@@ -1,5 +1,161 @@
 @import '../theme.scss';
 
+.dark-mode__email {
+  & > .email__content {
+    & > .email__content-readable {
+      & > iframe {
+        background-color: #242424;
+        border: 1px solid rgba(#4e4e4e, 0.5);
+      }
+    }
+
+    & > .email__content-header {
+      background-color: rgba(#242424, .8);
+      border: 1px solid rgba(#4e4e4e, 0.5);
+
+      & > .email__content-header__left {
+        & > svg {
+          fill: #fff;
+        }
+      }
+
+      & > .email__content-header__right {
+        & > ul {
+          & > li {
+            & > button {
+              color: rgb(122, 122, 122);
+              background-color: #242424;
+              border: 1px solid #3b3b3b;
+    
+              &:hover {
+                background-color: #292929;
+              }
+            }
+          }
+        }
+      }
+
+      & > .email__content-header__middle {
+        & > span {
+          color: rgb(177, 177, 177);
+        }
+
+        & > hr {
+          border-bottom: 1px solid #b6b6b6;
+        }
+      }
+    }
+  }
+}
+
+.light-mode__email {
+  & > .email__content {
+    & > .email__content-readable {
+      & > iframe {
+        background-color: #fff;
+      }
+    }
+
+    & > .email__content-header {
+      background-color: rgba(#fff, .8);
+      border-bottom: 1px solid rgba(#fff, 0.5);
+
+      & > .email__content-header__left {
+        & > svg {
+          fill: #222222;
+        }
+      }
+
+      & > .email__content-header__right {
+        & > ul {
+          & > li {
+            & > button {
+              color: #323232;
+              background-color: #b6b6b6;
+              border: 1px solid #8a8a8a;
+    
+              &:hover {
+                box-shadow: 1px 1px 2px rgba(#000, 0.2);;
+              }
+            }
+          }
+        }
+      }
+
+      & > .email__content-header__middle {
+        & > span {
+          color: #323232;
+        }
+
+        & > hr {
+          border-bottom: 1px solid #b6b6b6;
+        }
+      }
+    }
+  }
+}
+
+.dark-mode__email-details {
+  & > table {
+    & > tbody {
+      & > tr {
+        & > th {
+          color: #dddddd;
+        }
+
+        & > td {
+          color: #323232;
+
+          & > em {
+            color: #999999;
+          }
+
+          & > ol {
+            color: #fff;
+
+            & > li {
+              & > p {
+                background-color: #1a1a1a;
+                border: 1px solid rgba(#4e4e4e, 0.5);
+                color: #858585;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.light-mode__email-details {
+  & > table {
+    & > tbody {
+      & > tr {
+        & > th {
+          color: #323232;
+        }
+
+        & > td {
+          color: #323232;
+
+          & > em {
+            color: #999999;
+          }
+
+          & > ol {
+            & > li {
+              & > p {
+                background-color: #ececec;
+                color: #323232;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 .email-details {
   word-break: break-all;
 
@@ -10,20 +166,17 @@
           min-width: 90px;
           padding: 0.2rem 0.5rem;
           text-align: left;
-          color: #323232;
           font-size: 0.9rem;
           font-weight: bold;
         }
 
         & > td {
           padding: 0.2rem 0.5rem;
-          color: #323232;
           font-size: 0.9rem;
 
           & > em {
             font-style: italic;
             font-size: 0.8rem;
-            color: #999999;
           }
 
           & > ul {
@@ -48,11 +201,9 @@
           & > ol {
             & > li {
               & > p {
-                background-color: #ececec;
                 padding: 0.4rem;
                 margin: 0.4rem;
                 border-radius: $borderRadius;
-                color: #323232;
 
                 & > small {
                   color: map-get($colors, primary);
@@ -102,13 +253,10 @@
         overflow: hidden;
         border-radius: $borderRadius;
         font-family: sans-serif;
-        background-color: #fff;
       }
     }
 
     & > .email__content-header {
-      background-color: rgba(#fff, .8);
-      border-bottom: 1px solid rgba(#fff, 0.5);
       border-radius: $borderRadius;
       display: flex;
       align-items: center;
@@ -120,7 +268,6 @@
         & > svg {
           width: 2rem;
           height: 2rem;
-          fill: #222222;
         }
       }
 
@@ -138,19 +285,10 @@
             
             & > button {
               appearance: none;
-              background: none;
               cursor: pointer;
-              border: none;
-              color: #323232;
               transition: all .08s;
-              background-color: #b6b6b6;
               padding: 0.1rem 0.5rem;
               border-radius: $borderRadius;
-              border: 1px solid #8a8a8a;
-    
-              &:hover {
-                box-shadow: 1px 1px 2px rgba(#000, 0.2);;
-              }
             }
           }
         }
@@ -160,7 +298,6 @@
         flex-grow: 1;
 
         & > span {
-          color: #323232;
           display: inline-block;
           vertical-align: middle;
           font-size: 0.9rem;

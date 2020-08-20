@@ -1,4 +1,5 @@
 import React from 'react';
+import classnames from 'classnames';
 
 import { MailboxesService } from '../services/Mailboxes.service';
 import { EmailShortcut } from '../models/EmailShortcut.model';
@@ -155,9 +156,15 @@ export default class MailboxPage extends React.Component<any, any>
     const { loading, shortcuts } = this.state;
     const { mailbox } = this.props.match.params;
 
+    const classes = classnames({
+      'mailbox': true,
+      'dark-mode__mailbox': Config.darkmode,
+      'light-mode__mailbox': !Config.darkmode
+    });
+
     return (
       <React.Fragment>
-        <div className="mailbox">
+        <div className={ classes }>
           <div className="mailbox__loader" hidden={!loading}>
             <div className="mailbox__loader-bar">
               <span />

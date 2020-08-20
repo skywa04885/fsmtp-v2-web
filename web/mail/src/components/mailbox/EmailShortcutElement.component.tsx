@@ -1,8 +1,9 @@
 import React from 'react';
-import cnames from 'classnames';
+import classnames from 'classnames';
 import { EmailShortcut } from '../../models/EmailShortcut.model';
 
 import './EmailShortcutElement.styles.scss';
+import Config from '../../Config';
 
 interface EmailShortcutElementProps {
   shortcut: EmailShortcut,
@@ -13,8 +14,14 @@ export const EmailShortcutElement = (props: EmailShortcutElementProps): any => {
   const { e_Subject, e_Preview, e_SizeOctets, e_From } = props.shortcut;
   const { onClick } = props;
   
+  const classes = classnames({
+    'email-shortcut-elem': true,
+    'dark-mode__email-shortcut-elem': Config.darkmode,
+    'light-mode__email-shortcut-elem': !Config.darkmode
+  });
+  
   return (
-    <li className="email-shortcut-elem">
+    <li className={ classes }>
       <a onClick={onClick}>
         <div className="email-shortcut-elem__left">
           <div className="email-shortcut-elem__left__cb">

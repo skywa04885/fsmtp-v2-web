@@ -1,21 +1,73 @@
 @import '../theme.scss';
 
-.developer-info {
+.dark-mode__developer-info {
+  background-color: #242424;
+  border: 1px solid rgba(#4e4e4e, 0.5);
+
+  & > p {
+    color: #b4b4b4;
+
+    & > strong {
+      color: #fff;
+    }
+  }
+
+  & > .developer-info__section {
+    & > table {
+      & > tbody, & > thead {
+        & > tr {
+          & > td, & > th {
+            border: 1px solid #3a3a3a;
+          }
+
+          & > th {
+            color: #e7e7e7;
+          }
+        }
+      }   
+    }
+  }
+}
+
+.light-mode__developer-info {
   background-color: rgba(#fff, .8);
-  border-bottom: 1px solid rgba(#fff, 0.5);
+
+  & > p {
+    color: #353535;
+
+    & > strong {
+      color: #222;
+    }
+  }
+
+  & > .developer-info__section {
+    & > table {
+      & > tbody, & > thead {
+        & > tr {
+          & > td, & > th {
+            border: 1px solid #a8a8a8;
+          }
+
+          & > th {
+            color: #292929;
+          }
+        }
+      }   
+    }
+  }
+}
+
+.developer-info {
   border-radius: $borderRadius;
   padding: 1rem;
   margin: 1rem;
 
-
   & > p {
-    color: #353535;
     margin-bottom: 1rem;
     font-size: 0.9rem;
 
     & > strong {
       font-size: 1.2rem;
-      color: #222;
       font-weight: bold;
       display: block;
       margin-bottom: 0.4rem;
@@ -57,14 +109,12 @@
 
         & > tr {
           & > td, & > th {
-            border: 1px solid #a8a8a8;
             padding: 0.4rem 1rem;
           }
 
           & > th {
             font-size: 0.9rem;
             font-weight: bold;
-            color: #292929;
           }
 
           & > td {

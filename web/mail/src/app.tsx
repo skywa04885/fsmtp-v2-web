@@ -1,6 +1,7 @@
 import React from 'react';
 import { Switch, Redirect, Route, NavLink } from 'react-router-dom';
-import { Howler, Howl } from 'howler';
+import { Howl } from 'howler';
+import classnames from 'classnames';
 
 import { AccountService } from './services/Accounts.service';
 import MailboxPage from './pages/Mailbox.page';
@@ -19,6 +20,7 @@ import './app.scss';
 import { Email } from './models/Email.model';
 import EmailClients from './pages/EmailClients.page';
 import DeveloperInfo from './pages/DeveloperInfo.page';
+import Config from './Config';
 
 const StartupSound = require('./static/startup.mp3');
 
@@ -115,16 +117,22 @@ class App extends React.Component {
   public render = (): any => {
     const { loading, loaderMessage, ready } = this.state;
 
+    const classes = classnames({
+      'app': true,
+      'dark-mode__app': Config.darkmode,
+      'light-mode__app': !Config.darkmode
+    });
+
     if (loading)
       return (
-        <React.Fragment>
+        <div className={classes}>
           <Splashscreen message={loaderMessage} />
-        </React.Fragment>
+        </div>
       );
 
     return (
       <React.Fragment>
-        <div className="app">
+        <div className={classes}>
           <Loader ref={this.loader} />
           <Sidebar ref={this.sidebar} />
           <div className="app__wrapper">

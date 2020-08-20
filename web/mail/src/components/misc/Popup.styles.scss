@@ -10,6 +10,145 @@
   bottom: 0;
 }
 
+.dark-mode__pupup {
+  background-color: #242424;
+  border: 1px solid rgba(#4e4e4e, 0.5);
+
+  & > hr {
+    border: none;
+    border-bottom: 1px solid #3a3a3a;
+  }
+
+  & > .popup__title {
+    color: #fff;
+
+    & > svg {
+      fill: #ffffff;
+    }
+  }
+
+  & > .popup__content {
+    & > .popup__content__text {
+      color: #323232;
+    }
+
+    & > .popup__content__list {
+      & > li {
+        &:hover {
+          border-left: 2px solid #646464;
+          background-color: #1a1a1a;
+        }
+
+        & > p {
+          color: #bebebe;
+
+          & > svg {
+            fill: #cccccc;
+          }
+        }
+      }
+    }
+
+    & > .popup__content__buttons {
+      & > li {
+        & > button {
+          background-color: #323232;
+
+          &:hover {
+            background-color: #d6d6d6;
+            border: 1px solid #a5a5a5;
+
+            & > svg {
+              fill: #323232;
+            }
+
+            & > span {
+              color: #323232;
+            }
+          }
+
+          & > svg {
+            fill: #fff;
+          }
+
+          & > span {
+            color: #fff;
+          }
+        }
+      }
+    }
+  }
+}
+
+.light-mode__popup {
+  background-color: #fff;
+
+  & > hr {
+    border: none;
+    border-bottom: 1px solid #d6d6d6;
+  }
+
+  & > .popup__title {
+    color: #323232;
+
+    & > svg {
+      fill: #323232;
+    }
+  }
+
+  & > .popup__content {
+    & > .popup__content__text {
+      color: #323232;
+    }
+
+    & > .popup__content__list {
+      & > li {
+        &:hover {
+          border-left: 2px solid #323232;
+          background-color: #e0e0e0;
+        }
+
+        & > p {
+          color: #323232;
+
+          & > svg {
+            fill: #323232;
+          }
+        }
+      }
+    }
+
+    & > .popup__content__buttons {
+      & > li {
+        & > button {
+          background-color: #323232;
+
+          &:hover {
+            background-color: #d6d6d6;
+            border: 1px solid #a5a5a5;
+
+            & > svg {
+              fill: #323232;
+            }
+
+            & > span {
+              color: #323232;
+            }
+          }
+
+          & > svg {
+            fill: #fff;
+          }
+
+          & > span {
+            color: #fff;
+          }
+        }
+      }
+    }
+  }
+}
+
 .popup {
   position: fixed;
   z-index: 2200;
@@ -19,20 +158,13 @@
 
   max-width: 400px;
   width: 100%;
-  background-color: #fff;
   padding: 1rem;
   border-radius: $borderRadius;
   box-shadow: 2px 2px 9px rgba(#000, 0.4);
 
-  & > hr {
-    border: none;
-    border-bottom: 1px solid #d6d6d6;
-  }
-
   & > .popup__content {
     & > .popup__content__text {
       margin-top: 1rem;
-      color: #323232;
       font-size: 0.9rem;
     }
 
@@ -46,18 +178,11 @@
         cursor: pointer;
         transition: all .08s;
 
-        &:hover {
-          border-left: 2px solid #323232;
-          background-color: #e0e0e0;
-        }
-
         & > p {
-          color: #323232;
           font-weight: bold;
           font-size: 0.9rem;
 
           & > svg {
-            fill: #323232;
             display: inline-block;
             vertical-align: middle;
             margin-right: 0.5rem;
@@ -81,35 +206,19 @@
 
         & > button {
           border: none;
-          background-color: #323232;
           cursor: pointer;
           padding: 0.4rem 0.8rem;
           border-radius: $borderRadius;
           transition: all .08s;
           border: 1px solid transparent;
 
-          &:hover {
-            background-color: #d6d6d6;
-            border: 1px solid #a5a5a5;
-
-            & > svg {
-              fill: #323232;
-            }
-
-            & > span {
-              color: #323232;
-            }
-          }
-
           & > svg {
             display: inline-block;
             vertical-align: middle;
-            fill: #fff;
             margin-right: 0.2rem;
           }
 
           & > span {
-            color: #fff;
             display: inline-block;
             font-weight: bold;
             font-size: 0.9rem;
@@ -121,7 +230,6 @@
   }
 
   & > .popup__title {
-    color: #323232;
     font-size: 0.9rem;
     user-select: none;
 
@@ -129,7 +237,6 @@
       vertical-align: middle;
       margin-right: 0.5rem;
       display: inline-block;
-      fill: #323232;
     }
 
     & > strong {

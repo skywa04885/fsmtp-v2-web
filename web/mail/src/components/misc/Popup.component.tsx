@@ -1,4 +1,6 @@
 import React from 'react';
+import classnames from 'classnames';
+import Config from '../../Config';
 
 import './Popup.styles.scss';
 
@@ -134,10 +136,16 @@ export default class Popup extends React.Component<any, any> {
 
     if (!show) return null;
     
+    const classes = classnames({
+      'popup': true,
+      'dark-mode__pupup': Config.darkmode,
+      'light-mode__popup': !Config.darkmode
+    });
+
     return (
       <React.Fragment>
         <div className="popup-background" onClick={this.close} />
-        <div className="popup">
+        <div className={ classes }>
           <p className="popup__title">
             <svg
               xmlns="http://www.w3.org/2000/svg"

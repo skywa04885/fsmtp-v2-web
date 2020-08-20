@@ -1,9 +1,49 @@
 @import '../../theme.scss';
 
-.fullscreen-message {
-  text-align: center;
+.dark-mode__fullscreen-message {
+  background-color: #242424;
+  border: 1px solid rgba(#4e4e4e, 0.5);
+
+  & > .fullscreen-message__picture {
+    & > svg {
+      fill: #fff;
+    }
+  }
+
+  & > .fullscreen-message__info {
+    & > p {
+      color: rgb(190, 190, 190);
+
+      & > strong {
+        color: #fff;
+      }
+    }
+  }
+}
+
+.light-mode__fullscreen-message {
   background-color: rgba(#fff, .8);
   border: 1px solid rgba(#fff, 0.5);
+
+  & > .fullscreen-message__picture {
+    & > svg {
+      fill: #323232;
+    }
+  }
+
+  & > .fullscreen-message__info {
+    & > p {
+      color: #555555;
+
+      & > strong {
+        color: #323232;
+      }
+    }
+  }
+}
+
+.fullscreen-message {
+  text-align: center;
   padding: 1rem;
 
   & > .fullscreen-message__picture {
@@ -12,7 +52,6 @@
     margin-right: 1rem;
 
     & > svg {
-      fill: #323232;
       width: 3.8rem;
       height: 3.8rem;
     }
@@ -25,12 +64,10 @@
 
     & > p {
       font-size: 0.9rem;
-      color: #555555;
 
       & > strong {
         font-size: 1.6rem;
         font-weight: bold;
-        color: #323232;
 
         & > span {
           animation: EmailLoadingDot 1.4s both infinite;

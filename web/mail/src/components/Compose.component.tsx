@@ -6,6 +6,7 @@ import './Compose.styles.scss';
 import { AccountService } from '../services/Accounts.service';
 import { MailerService } from '../services/Mailer.service';
 import { popup } from '..';
+import Config from '../Config';
 
 enum ComposeState {
   Hidden,
@@ -142,14 +143,16 @@ export default class Compose extends React.Component<any, any> {
       );
     }
 
-    const classnames = cnames({
+    const classes = cnames({
       'compose': true,
       'compose-fscreen': composeState === ComposeState.Huge,
-      'compose-sscreen': composeState === ComposeState.Visible
+      'compose-sscreen': composeState === ComposeState.Visible,
+      'dark-mode__compose': Config.darkmode,
+      'light-mode__compose': !Config.darkmode
     });
 
     return (
-      <div className={classnames}>
+      <div className={ classes }>
         <div className="compose__head">
           <p>
             <strong>Compose MIME Message</strong>

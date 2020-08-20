@@ -1,5 +1,30 @@
 @import '../theme.scss';
 
+.dark-mode__mailbox {
+  & > .mailbox__loader {
+    & > .mailbox__loader-bar {
+      background-color: rgba(map-get($colors, primary), .2);
+    
+      & > span {
+        background-color: map-get($colors, primary);
+      }
+    }
+  }
+}
+
+
+.light-mode__mailbox {
+  & > .mailbox__loader {
+    & > .mailbox__loader-bar {
+      background-color: rgba(#fff, .2);
+
+      & > span {
+        background-color: #fff;
+      }
+    }
+  }
+}
+
 .mailbox {
   & > .mailbox__content
   {
@@ -16,13 +41,11 @@
       right: 0;
       left: 0;
       height: 0.3rem;
-      background-color: rgba(#fff, .2);
       
       & > span {
         position: absolute;
         top: 0;
         bottom: 0;
-        background-color: #fff;
         animation: MailboxLoaderSpan .9s both infinite;
 
         &:nth-child(1) {

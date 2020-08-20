@@ -1,10 +1,11 @@
 import React from 'react';
-
-import './EmailClients.styles.scss';
+import classnames from 'classnames';
 
 import EmailClientExample from '../static/email-client-example.png';
 import { ToolbarButton } from '../components/nav/Toolbar.component';
 import Config from '../Config';
+
+import './EmailClients.styles.scss';
 
 interface EmailClientsProps {
   setToolbar: (buttons: ToolbarButton[]) => {},
@@ -22,8 +23,14 @@ class EmailClients extends React.Component<any, any> {
   };
 
   public render = (): any => {
+    const classes = classnames({
+      'email__clients': true,
+      'dark-mode__email__clients': Config.darkmode,
+      'light-mode__email__clients': !Config.darkmode
+    });
+
     return (
-      <div className="email__clients">
+      <div className={ classes }>
         <h1>Email Clients</h1>
         <p>
           If you want to access your messages from your phone or desktop computer,

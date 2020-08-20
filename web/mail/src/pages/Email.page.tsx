@@ -1,4 +1,5 @@
 import React, { AnchorHTMLAttributes } from 'react';
+import classnames from 'classnames';
 
 import { MailboxesService } from '../services/Mailboxes.service';
 import { parse } from '../parsers/MIMEParser.parser';
@@ -182,8 +183,14 @@ export default class EmailPage extends React.Component<any, any> {
     const mailer: any = email?.e_Headers.find(a => a.h_Key === 'x-mailer')?.h_Value;
     const mimeVersion: any = email?.e_Headers.find(a => a.h_Key === 'mime-version')?.h_Value;
 
+    const classes = classnames({
+      'email-details': true,
+      'dark-mode__email-details': Config.darkmode,
+      'light-mode__email-details': !Config.darkmode
+    });
+
     popup.current?.showCustom((
-      <div className="email-details">
+      <div className={ classes }>
         <table>
           <tbody>
             <tr>
@@ -315,7 +322,12 @@ export default class EmailPage extends React.Component<any, any> {
 
     // Sets the default styles
     body.style.fontFamily = 'sans-serif';
-    body.style.color = '#323232';
+   
+    if (Config.darkmode) {
+      body.style.color = '#fff';
+      body.style.backgroundColor = "#242424";
+    }
+    else body.style.color = "#323232";
 
     // Configures that all the links will be opened in a new window instead
     //  of in the iframe itself
@@ -327,9 +339,15 @@ export default class EmailPage extends React.Component<any, any> {
   public render = (): any => {
     const { email, error } = this.state;
 
+    const classes = classnames({
+      'email': true,
+      'dark-mode__email': Config.darkmode,
+      'light-mode__email': !Config.darkmode
+    });
+
     if (error) {
       return (
-        <div className="email">
+        <div className={ classes }>
           <FullscreenMessage
             title="Parsing error"
             message={ error.toString() }
@@ -350,7 +368,7 @@ export default class EmailPage extends React.Component<any, any> {
     } else if (!email)
     {
       return (
-        <div className="email">
+        <div className={ classes }>
           <FullscreenMessage
             title="Parsing message"
             message="Please wait, this may take some time"
@@ -394,7 +412,7 @@ export default class EmailPage extends React.Component<any, any> {
 
     return (
       <React.Fragment>
-        <div className="email">
+        <div className={ classes }>
           <div className="email__content">
             <div className="email__content-header">
               <div className="email__content-header__left">

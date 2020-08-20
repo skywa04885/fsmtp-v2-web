@@ -1,6 +1,8 @@
 import React from 'react';
+import classnames from 'classnames';
 
 import './Toolbar.styles.scss';
+import Config from '../../Config';
 
 interface ToolbarProps {}
 
@@ -43,8 +45,14 @@ export class Toolbar extends React.Component<any, any> {
   };
 
   public render = (): any => {
+    const classes = classnames({
+      'toolbar': true,
+      'dark-mode__toolbar': Config.darkmode,
+      'light-mode__toolbar': !Config.darkmode
+    })
+
     return (
-      <div className="toolbar">
+      <div className={ classes }>
         <ul className="toolbar__list">
           { this.getElements() }
         </ul>

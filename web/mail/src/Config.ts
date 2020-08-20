@@ -1,5 +1,6 @@
 export default class Config
 {
+  public static darkmode: boolean = true;
   public static host: string = 'fannst.nl';
   public static method: string = 'https';
   public static defaultHeaders: any = {

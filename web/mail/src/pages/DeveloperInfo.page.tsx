@@ -1,13 +1,15 @@
 import React from 'react';
+import classnames from 'classnames';
+
 import Config from '../Config';
 import { ToolbarButton } from '../components/nav/Toolbar.component';
 import { AccountService } from '../services/Accounts.service';
-
-import './DeveloperInfo.styles.scss';
 import { MailboxesService } from '../services/Mailboxes.service';
 import { Mailbox } from '../models/Mailbox.model';
 import { MailboxStatus } from '../models/MailboxStatus.model';
 import { popup } from '..';
+
+import './DeveloperInfo.styles.scss';
 
 interface DeveloperInfoProps {
   setToolbar: (buttons: ToolbarButton[]) => {},
@@ -76,8 +78,14 @@ export default class DeveloperInfo extends React.Component<any, any> {
     const { mailboxes, mailboxStats } = this.state;
     const accObj: any = AccountService.account.getObject();
 
+    const classes = classnames({
+      'developer-info': true,
+      'dark-mode__developer-info': Config.darkmode,
+      'light-mode__developer-info': !Config.darkmode
+    });
+
     return (
-      <div className="developer-info">
+      <div className={ classes }>
         <p>
           <strong>General</strong>
           Your account is the base which holds all the other information.

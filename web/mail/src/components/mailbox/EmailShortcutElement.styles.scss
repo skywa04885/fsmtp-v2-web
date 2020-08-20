@@ -1,28 +1,84 @@
 @import '../../theme.scss';
 
-.email-shortcut-elem {
-  & > a {
-    text-decoration: none;
-    cursor: pointer;
+.dark-mode__email-shortcut-elem {
+  &:first-child > a {
+    border-top: 1px solid rgba(#4e4e4e, 0.5);
+  }
 
-    padding: 0.5rem 0.9em;
+  & > a {
+    background-color: #242424;
+    border-bottom: 1px solid rgba(#4e4e4e, 0.5);
+    border-left: 1px solid rgba(#4e4e4e, 0.5);
+    border-right: 1px solid rgba(#4e4e4e, 0.5);
+
+    &:hover {
+      background-color: rgba(#1d1d1d, .9);
+    }
+
+    & > .email-shortcut-elem__right {
+      & > p {
+        color: #afafaf;
+      }
+    }
+
+    & > .email-shortcut-elem__middle {
+      & > p {
+        color: #8f8e8e;
+
+        & > strong {
+          color: #d1d1d1;
+        }
+      }
+    }
+  }
+}
+
+.light-mode__email-shortcut-elem {
+  & > a {
     background-color: rgba(#fff, .8);
     border-bottom: 1px solid rgba(#fff, 0.5);
-    transition: all .08s;
-    display: flex;
-    align-items: center;
 
     &:hover {
       background-color: rgba(#fff, .9);
-      box-shadow: 2px 2px rgba(#000, .4);
-      border-left: 2px solid map-get($colors, primary);
       border-bottom: 1px solid transparent;
     }
 
     & > .email-shortcut-elem__right {
       & > p {
-        font-size: 0.8rem;
         color: #666666;
+      }
+    }
+
+    & > .email-shortcut-elem__middle {
+      & > p {
+        color: #454545;
+
+        & > strong {
+          color: #323232;
+        }
+      }
+    }
+  }
+}
+
+.email-shortcut-elem {
+  & > a {
+    text-decoration: none;
+    cursor: pointer;
+
+    padding: 0.6rem 0.9em;
+    transition: all .08s;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      box-shadow: 2px 2px rgba(#000, .4);
+      border-left: 2px solid map-get($colors, primary);
+    }
+
+    & > .email-shortcut-elem__right {
+      & > p {
+        font-size: 0.8rem;
       }
     }
   
@@ -78,10 +134,8 @@
         overflow: hidden;
         text-overflow: ellipsis;
         font-size: 0.8rem;
-        color: #454545;
 
         & > strong {
-          color: #323232;
           font-size: 0.9rem;
           font-weight: bold;
         }

@@ -1,7 +1,10 @@
 import React, { FormEvent } from 'react';
-import ReactDOM from 'react-dom';
-import './Header.styles.scss';
+import classnames from 'classnames';
 import { AccountService } from '../../services/Accounts.service';
+
+import './Header.styles.scss';
+import Config from '../../Config';
+
 
 interface HeaderProps {
   toggleSidebar: () => {}
@@ -28,10 +31,22 @@ export default class Header extends React.Component<any, any> {
     const { showAccount } = this.state;
     const { toggleSidebar } = this.props;
 
+    const classes = classnames({
+      'header': true,
+      'dark-mode__header': Config.darkmode,
+      'light-mode__header': !Config.darkmode
+    });
+
+    const dropdownClasses = classnames({
+      'account-dropdown': true,
+      'dark-mode__account-dropdown': Config.darkmode,
+      'light-mode__account-dropdown': !Config.darkmode
+    });
+
     return (
       <React.Fragment>
         {/* The header itself */}
-        <div className="header" ref="header">
+        <div className={ classes } ref="header">
           {/* Menu and motd */}
           <div className="header__left">
             <button type="button" onClick={toggleSidebar} className="header__left__btn">
@@ -47,7 +62,7 @@ export default class Header extends React.Component<any, any> {
             </button>
             <div className="header__left__motd">
               <p>
-                <a>Fannst Webmail</a>
+                <a>Webmail</a>
               </p>
             </div>
           </div>
@@ -87,7 +102,7 @@ export default class Header extends React.Component<any, any> {
         </div>
         {/* The account dropdown */}
         {showAccount? (
-          <div className="account-dropdown">
+          <div className={ dropdownClasses }>
             <div className="account-dropdown__head">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
