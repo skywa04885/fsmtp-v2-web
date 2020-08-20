@@ -7,7 +7,7 @@ const music: any = require('../../static/bgm.mp3');
 const MusicPlayer = ({}): any => {
   return (
     <div className="music-player">
-      <audio controls autoPlay loop>
+      <audio controls loop>
         <source src={music} />
       </audio>
     </div>

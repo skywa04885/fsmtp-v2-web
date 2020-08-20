@@ -193,6 +193,61 @@
       }
     }
   }
+
+  & > .account-dropdown__togglers {
+    & > form {
+      & > div {
+        display: flex;
+        align-items: center;
+
+        & > label {
+          text-align: left;
+          flex-grow: 1;
+          color: #dfdfdf;
+          font-weight: bold;
+          font-size: 0.8rem;
+        }
+      
+        & > input {
+          appearance: none;
+          background-color: #dfdfdf;
+          width: 80px;
+          width: 2.2rem;
+          height: 1rem;
+          border-radius: 0.5rem;
+          position: relative;
+          cursor: pointer;
+          transition: all .12s;
+          border: 1px solid rgba(#747474, 0.5);
+
+          &::after {
+            content: '';
+            height: 1rem;
+            width: 1rem;
+            background-color: #f0f0f0;
+            position: absolute;
+            display: block;
+            box-shadow: 1px 1px 3px rgba(#000, 0.3);
+            left: -.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            transition: all .12s;
+            padding: 0.2rem;
+          }
+
+          &:checked {
+            background-color: #111111;
+          }
+
+          &:checked::after {
+            left: calc(100% - 1rem);
+            background-color: map-get($colors, primary);
+          }
+        }
+      }
+    }
+  }
 }
 
 .light-mode__account-dropdown {
@@ -212,6 +267,60 @@
       }
     }
   }
+
+  & > .account-dropdown__togglers {
+    & > form {
+      & > div {
+        display: flex;
+        align-items: center;
+
+        & > label {
+          text-align: left;
+          flex-grow: 1;
+          color: #333333;
+          font-weight: bold;
+          font-size: 0.8rem;
+        }
+      
+        & > input {
+          appearance: none;
+          background-color: #dfdfdf;
+          width: 80px;
+          width: 2.2rem;
+          height: 1rem;
+          border-radius: 0.5rem;
+          position: relative;
+          cursor: pointer;
+          transition: all .12s;
+
+          &::after {
+            content: '';
+            height: 1rem;
+            width: 1rem;
+            background-color: #f0f0f0;
+            position: absolute;
+            display: block;
+            box-shadow: 1px 1px 3px rgba(#000, 0.3);
+            left: -.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            transition: all .12s;
+            padding: 0.2rem;
+          }
+
+          &:checked {
+            background-color: #272727;
+          }
+
+          &:checked::after {
+            left: calc(100% - 1rem);
+            background-color: map-get($colors, primary);
+          }
+        }
+      }
+    }
+  }
 }
 
 .account-dropdown {
@@ -224,6 +333,53 @@
   border-radius: $borderRadius;
   z-index: 1000;
   box-shadow: 1px 1px 2px rgba(#000, 0.25);
+
+  & > .account-dropdown__togglers {
+    & > form {
+      & > div {
+        display: flex;
+        align-items: center;
+
+        & > label {
+          text-align: left;
+          flex-grow: 1;
+          font-weight: bold;
+          font-size: 0.8rem;
+        }
+      
+        & > input {
+          appearance: none;
+          width: 80px;
+          width: 2.2rem;
+          height: 1rem;
+          border-radius: 0.5rem;
+          position: relative;
+          cursor: pointer;
+          transition: all .12s;
+
+          &::after {
+            content: '';
+            height: 1rem;
+            width: 1rem;
+            position: absolute;
+            display: block;
+            box-shadow: 1px 1px 3px rgba(#000, 0.3);
+            left: -.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            transition: all .12s;
+            padding: 0.2rem;
+          }
+
+          &:checked::after {
+            left: calc(100% - 1rem);
+            background-color: map-get($colors, primary);
+          }
+        }
+      }
+    }
+  }
 
   & > .account-dropdown__head {
     & > svg {

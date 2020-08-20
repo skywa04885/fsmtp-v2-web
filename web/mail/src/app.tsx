@@ -102,6 +102,11 @@ class App extends React.Component {
     }, 100);
   };
 
+  public toggleDarmMode = (): void => {
+    Config.setDarkMode(!Config.darkmode);
+    this.setState({});
+  };
+
   public refresh = (): void => {
     this.sidebar?.current?.refresh().then(() => {
       this.setState({
@@ -142,7 +147,7 @@ class App extends React.Component {
               updateMailboxStat={this.sidebar?.current?.updateMailboxStat}
               ref={this.composeMenu}
             />
-            <Header toggleSidebar={this.toggleSidebar} />
+            <Header toggleDarmMode={this.toggleDarmMode} toggleSidebar={this.toggleSidebar} />
             <Toolbar ref={this.toolbar} />
             <div className="app__content">
               {!ready ? null : (

@@ -7,7 +7,8 @@ import Config from '../../Config';
 
 
 interface HeaderProps {
-  toggleSidebar: () => {}
+  toggleSidebar: () => {},
+  toggleDarmMode: () => {}
 };
 
 export default class Header extends React.Component<any, any> {
@@ -29,7 +30,7 @@ export default class Header extends React.Component<any, any> {
   
   public render = (): any => {
     const { showAccount } = this.state;
-    const { toggleSidebar } = this.props;
+    const { toggleSidebar, toggleDarmMode } = this.props;
 
     const classes = classnames({
       'header': true,
@@ -120,6 +121,15 @@ export default class Header extends React.Component<any, any> {
                 <br />
                 <small>User {AccountService.account.a_Bucket}:{AccountService.account.a_UUID}</small>
               </p>
+            </div>
+            <hr />
+            <div className="account-dropdown__togglers">
+              <form onSubmit={e => e.preventDefault()}>
+                <div>
+                  <label htmlFor="accountDropdownDMToggler">Dark-mode</label>
+                  <input checked={Config.darkmode} onChange={toggleDarmMode} id="accountDropdownDMToggler" type="checkbox" />
+                </div>
+              </form>
             </div>
             <hr />
             <ul>

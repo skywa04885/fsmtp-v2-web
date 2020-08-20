@@ -1,6 +1,6 @@
 export default class Config
 {
-  public static darkmode: boolean = true;
+  public static darkmode: boolean = localStorage.getItem('config:dark-mode') === 'true' ? true : false;
   public static host: string = 'fannst.nl';
   public static method: string = 'https';
   public static defaultHeaders: any = {
@@ -16,4 +16,9 @@ export default class Config
   public static updateTitle = (title: string) => {
     document.title = `${title} - Fannst Webmail (FSMTP-V2)`;
   }
+
+  public static setDarkMode = (enable: boolean) => {
+    localStorage.setItem('config:dark-mode', (enable ? 'true' : 'false'));
+    Config.darkmode = enable;
+  };
 }
