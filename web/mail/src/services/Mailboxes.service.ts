@@ -171,7 +171,7 @@ export class MailboxesService {
       };
       const fields: any = {
         mailbox, mailbox_target: mailboxTarget,
-        email_uuids: emailUUIDs
+        email_uuids: emailUUIDs.join(',')
       };
       
       Axios.post(url, fields, options).then(response => {

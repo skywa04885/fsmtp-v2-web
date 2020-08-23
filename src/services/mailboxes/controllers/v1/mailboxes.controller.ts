@@ -332,15 +332,17 @@ export namespace Controllers
           required: true
         },
         email_uuids: {
-          type: 'array',
+          type: 'string',
           required: true
         }
       }
     })) return;
 
-    let uuids: cassandraDriver.types.TimeUuid[] = [];
+    let uuids: cassandraDriver.types.TimeUuid[];
     try {
-      uuids.push(cassandraDriver.types.TimeUuid.fromString(req.body.email_uuid));
+      uuids = req.body.email_uuids.split(',').map((uuid: string) => {
+        return cassandraDriver.types.TimeUuid.fromString(uuid);
+      });
     } catch (err) {
       return sendInternalServerError(req, res, next, err, __filename);
     }
