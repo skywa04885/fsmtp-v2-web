@@ -56,50 +56,36 @@ class App extends React.Component {
   }
 
   public componentDidMount = (): void => {
-    setTimeout(() => {
-      this.setState(
-        {
-          loaderMessage: 'Authenticating',
-        },
-        () => {
-          // Authenticates the user, and if not throws error
-          //  messge to the screen
-          AccountService.authenticate()
-            .then((success) => {
-              if (!success) {
-                this.setState(
-                  {
-                    loaderMessage: 'Not logged in, redirecting',
-                  },
-                  () => {
-                    setTimeout(() => {
-                      window.location.href = '/auth/login';
-                    }, 1600);
-                  }
-                );
-              } else {
-                setTimeout(() => {
-                  // Plays the startup sound
-                  new Howl({
-                    src: StartupSound,
-                  }).play();
+    this.setState({
+      loaderMessage: 'Authenticating',
+    }, () => {
+      // Authenticates the user, and if not throws error
+      //  messge to the screen
+      AccountService.authenticate().then((success) => {
+        if (!success) {
+          this.setState({
+            loaderMessage: 'Not logged in, redirecting',
+          }, () => {
+            setTimeout(() => {
+              window.location.href = '/auth/login';
+            }, 1600);
+          });
+        } else {
+          // Plays the startup sound
+          new Howl({
+            src: StartupSound,
+          }).play();
 
-                  // Disables the splashscreen
-                  this.setState(
-                    {
-                      loading: false,
-                    },
-                    () => this.refresh()
-                  );
-                }, 400);
-              }
-            })
-            .catch((err) => {
-              popup.current?.showText(err.toString(), 'Could not authenticate');
-            });
+          // Disables the splashscreen
+          this.setState({
+            loading: false,
+          }, () => this.refresh());
         }
-      );
-    }, 100);
+      })
+      .catch((err) => {
+        popup.current?.showText(err.toString(), 'Could not authenticate');
+      });
+    });
   };
 
   public toggleDarmMode = (): void => {

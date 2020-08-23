@@ -27,7 +27,8 @@ export default class MailboxPage extends React.Component<any, any>
     loading: boolean,
     page: number,
     shortcuts: EmailShortcut[],
-    mailbox: string
+    mailbox: string,
+    selected: number
   };
 
   public constructor(props: InboxPageProps)
@@ -39,10 +40,11 @@ export default class MailboxPage extends React.Component<any, any>
       page: 0,
       shortcuts: [],
       mailbox: '',
+      selected: 0
     };
   }
 
-  public updateToolbar = (): void => {
+  public updateToolbar = (showSelectedOptions?: boolean): void => {
     const { setToolbar, onCompose } = this.props;
     const { mailbox } = this.props.match.params;
 
@@ -70,7 +72,53 @@ export default class MailboxPage extends React.Component<any, any>
       });
     }
 
+    if (showSelectedOptions) {
+      toolbarButtons.push({
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/></svg>,
+        title: 'Move selection to trash',
+        key: 'mailbox_selected_delete',
+        callback: this.onTrashClear
+      });
+
+      toolbarButtons.push({
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>,
+        title: 'Move selection to folder',
+        key: 'mailbox_selected_move',
+        callback: this.onTrashClear
+      });
+
+      toolbarButtons.push({
+        icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>,
+        title: 'Archive messages',
+        key: 'mailbox_selected_archive',
+        callback: this.archiveSelection
+      });
+    }
+
     setToolbar(toolbarButtons);
+  }
+
+  public getSelection = (): string[] => {
+    const { shortcuts } = this.state;
+    return shortcuts.filter(s => s.e_Selected).map(s => s.e_UUID);
+  };
+
+  public archiveSelection = (): void => {
+    const { mailbox } = this.state;
+    const { showLoader, hideLoader } = this.props;
+  
+    showLoader('Performing bulk archive')
+    MailboxesService.bulkMove(mailbox, this.getSelection(), 'INBOX.Archive').then(() => {
+      hideLoader();
+
+      const { shortcuts } = this.state;
+      this.setState({
+        shortcuts: shortcuts.filter(s => !s.e_Selected)
+      })
+    }).catch(err => {
+      hideLoader();
+      popup.current?.showText(err.toString(), 'Could not perform bulk operation');
+    });
   }
 
   public onTrashClear = (): void => {
@@ -130,16 +178,14 @@ export default class MailboxPage extends React.Component<any, any>
       loading: true
     });
 
-    setTimeout(() => {
-      MailboxesService.gatherContents(mailbox, page).then(shortcuts => {
-        this.setState({
-          loading: false,
-          shortcuts
-        });
-      }).catch(err => {
-        popup.current?.showText(err.toString(), 'Could not gather mailbox contents');
+    MailboxesService.gatherContents(mailbox, page).then(shortcuts => {
+      this.setState({
+        loading: false,
+        shortcuts
       });
-    }, 100);
+    }).catch(err => {
+      popup.current?.showText(err.toString(), 'Could not gather mailbox contents');
+    });
   };
   
   public onClick = (bucket: number, uuid: string, mb?: string): void => {
@@ -150,6 +196,29 @@ export default class MailboxPage extends React.Component<any, any>
     } else {
       history.push(`/mail/${mailbox}/${bucket}/${uuid}`);
     }
+  };
+
+  public toggleSelected = (checked: boolean, uid: number): void => {
+    const { shortcuts, selected } = this.state;
+
+    let shortcut = shortcuts.find(s => s.e_UID == uid);
+    if (!shortcut) return console.error('Shortcut could not be toggled !');
+    shortcut.e_Selected = checked;
+
+    let selectedCount: number = 0;
+    shortcuts.forEach(s => {
+      if (s.e_Selected) ++selectedCount;
+    });
+
+    if (selected === 0 && selectedCount > 0) {
+      this.updateToolbar(true);
+    } else if (selected > 0 && selectedCount === 0) {
+      this.updateToolbar(false);
+    }
+
+    this.setState({
+      selected: selectedCount
+    });
   };
 
   public render = (): any => {
@@ -176,6 +245,7 @@ export default class MailboxPage extends React.Component<any, any>
                 return (
                   <EmailShortcutElement
                     onClick={() => this.onClick(shortcut.e_Bucket, shortcut.e_EmailUUID, shortcut.e_Mailbox)}
+                    toggleSelected={ this.toggleSelected }
                     key={shortcut.e_UID}
                     shortcut={shortcut}
                   />

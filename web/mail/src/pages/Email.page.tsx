@@ -166,7 +166,10 @@ export default class EmailPage extends React.Component<any, any> {
 
   public onCustomMove = (): void => {
     MailboxesService.gatherMailboxes().then(mailboxes => {
-      popup.current?.showList(mailboxes.map(mailbox => {
+      popup.current?.showList(mailboxes.filter(mailbox => {
+        if (mailbox.e_MailboxPath === 'INBOX.Trash') return;
+        else return mailbox;
+      }).map(mailbox => {
         return {
           text: mailbox.e_MailboxPath,
           onClick: () => this.onMoveOperation(mailbox.e_MailboxPath),

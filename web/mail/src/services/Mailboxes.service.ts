@@ -161,28 +161,48 @@ export class MailboxesService {
     });
   };
 
+  public static bulkMove = (mailbox: string, emailUUIDs: string[], mailboxTarget: string) => {
+    return new Promise<null>((resolve, reject) => {
+      const url: string = Config.buildURL('/email/bulk-move', MailboxesService.port);
+      const options: any = {
+        headers: Object.assign(Config.defaultHeaders, {
+          'Authorization': AccountService.buildBearer()
+        })
+      };
+      const fields: any = {
+        mailbox, mailbox_target: mailboxTarget,
+        email_uuids: emailUUIDs
+      };
+      
+      Axios.post(url, fields, options).then(response => {
+        if (response.status !== 200)
+          return reject(new Error(`${response.status}: ${response.statusText}`));
+
+        resolve();
+      }).catch(err => reject(err));
+    });
+  };
+
   public static move = (mailbox: string, emailUUID: string, mailboxTarget: string): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      setTimeout(() => {
-        const url: string = Config.buildURL('/email/move', MailboxesService.port);
-        const options: any = {
-          headers: Object.assign(Config.defaultHeaders, {
-            'Authorization': AccountService.buildBearer()
-          })
-        };
-        const fields: any = {
-          mailbox,
-          mailbox_target: mailboxTarget,
-          email_uuid: emailUUID
-        };
-  
-        Axios.post(url, fields, options).then(response => {
-          if (response.status !== 200)
-            return reject(new Error(`${response.status}: ${response.statusText}`));
-  
-          resolve();
-        }).catch(err => reject(err));
-      }, 400);
+      const url: string = Config.buildURL('/email/move', MailboxesService.port);
+      const options: any = {
+        headers: Object.assign(Config.defaultHeaders, {
+          'Authorization': AccountService.buildBearer()
+        })
+      };
+      const fields: any = {
+        mailbox,
+        mailbox_target: mailboxTarget,
+        email_uuid: emailUUID
+      };
+
+      Axios.post(url, fields, options).then(response => {
+        if (response.status !== 200)
+          return reject(new Error(`${response.status}: ${response.statusText}`));
+
+        resolve();
+      }).catch(err => reject(err));
     });
   };
 

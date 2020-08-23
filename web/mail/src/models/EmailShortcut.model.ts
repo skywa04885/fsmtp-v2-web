@@ -18,6 +18,7 @@ export class EmailShortcut {
   public e_SizeOctets: number;
   public e_From: string;
   public e_Mailbox: string;
+  public e_Selected: boolean;
 
   public constructor(data: {
     e_Subject: string,
@@ -29,7 +30,8 @@ export class EmailShortcut {
     e_Bucket: number,
     e_SizeOctets: number,
     e_From: string,
-    e_Mailbox: string
+    e_Mailbox: string,
+    e_Selected: boolean
   }) {
     this.e_Subject = data.e_Subject;
     this.e_Preview = data.e_Preview;
@@ -41,6 +43,7 @@ export class EmailShortcut {
     this.e_SizeOctets = data.e_SizeOctets;
     this.e_From = data.e_From;
     this.e_Mailbox = data.e_Mailbox;
+    this.e_Selected = data.e_Selected;
   }
 
   public static fromMap = (map: any): EmailShortcut => {
@@ -54,7 +57,8 @@ export class EmailShortcut {
       e_Bucket: map['e_bucket'],
       e_SizeOctets: map['e_size_octets'],
       e_From: map['e_from'],
-      e_Mailbox: map['e_mailbox']
+      e_Mailbox: map['e_mailbox'],
+      e_Selected: false
     });
   };
 }

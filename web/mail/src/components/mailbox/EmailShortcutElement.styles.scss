@@ -15,6 +15,19 @@
       background-color: rgba(#1d1d1d, .9);
     }
 
+    & > .email-shortcut-elem__left {
+      & > .email-shortcut-elem__left__cb {
+        & > input {
+          border: 2px solid #fff;
+          background-color: rgba(#fff, .2);
+
+          &:checked::after {
+            color: #fff;
+          }
+        }
+      }
+    }
+
     & > .email-shortcut-elem__right {
       & > p {
         color: #afafaf;
@@ -43,6 +56,19 @@
       border-bottom: 1px solid transparent;
     }
 
+    & > .email-shortcut-elem__left {
+      & > .email-shortcut-elem__left__cb {
+        & > input {
+          background: none;
+          border: 2px solid #a3a3a3;
+
+          &:checked::after {
+            color: #323232;
+          }
+        }
+      }
+    }
+    
     & > .email-shortcut-elem__right {
       & > p {
         color: #666666;
@@ -99,15 +125,12 @@
           appearance: none;
           width: 1.2rem;
           height: 1.2rem;
-          background: none;
-          border: 2px solid #a3a3a3;
           border-radius: $borderRadius;
-  
+
           &:checked::after {
-            content: '\2713';
+            content: '+';
             font-weight: bold;
             font-size: 1.1rem;
-            color: #323232;
           }
         }
       }
@@ -142,4 +165,15 @@
       }
     }
   }
+}
+
+.dark-mode__email-shortcut-elem_sl > a {
+  background-color: #1d1d1d;
+  border-bottom: 1px solid rgba(#4e4e4e, 0.5);
+  border-left: 1px solid rgba(#4e4e4e, 0.5);
+  border-right: 1px solid rgba(#4e4e4e, 0.5);
+}
+
+.light-mode__email-shortcut-elem_sl {
+  background-color: rgba(#fff, .9);
 }
