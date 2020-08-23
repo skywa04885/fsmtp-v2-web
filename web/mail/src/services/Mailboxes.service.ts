@@ -173,8 +173,6 @@ export class MailboxesService {
         mailbox, mailbox_target: mailboxTarget,
         email_uuids: emailUUIDs.join(',')
       };
-
-      console.log(fields);
       
       Axios.post(url, fields, options).then(response => {
         if (response.status !== 200)
