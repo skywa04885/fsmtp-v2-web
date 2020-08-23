@@ -332,7 +332,7 @@ export namespace Controllers
           required: true
         },
         email_uuids: {
-          type: 'string',
+          type: 'array',
           required: true
         }
       }
