@@ -199,7 +199,7 @@ export default class MailboxPage extends React.Component<any, any>
   };
 
   public toggleSelected = (checked: boolean, uid: number): void => {
-    const { shortcuts, selected } = this.state;
+    const { shortcuts, selected, mailbox } = this.state;
 
     let shortcut = shortcuts.find(s => s.e_UID == uid);
     if (!shortcut) return console.error('Shortcut could not be toggled !');
@@ -210,9 +210,14 @@ export default class MailboxPage extends React.Component<any, any>
       if (s.e_Selected) ++selectedCount;
     });
 
+    if (selectedCount > 0) {
+      Config.updateTitle(`${selectedCount} selected in ${mailbox}`);
+    }
+
     if (selected === 0 && selectedCount > 0) {
       this.updateToolbar(true);
     } else if (selected > 0 && selectedCount === 0) {
+      Config.updateTitle(mailbox);
       this.updateToolbar(false);
     }
 

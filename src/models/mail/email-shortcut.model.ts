@@ -2,6 +2,7 @@ import cassandraDriver from 'cassandra-driver';
 import { Cassandra } from '../../helpers/database.helper';
 import { Mailbox, MailboxFlags } from './mailbox.model';
 import { MailboxStatus } from './mailbox-status.model';
+import { reject } from 'async';
 
 export const EmailFlags = {
   Seen: 1,
@@ -51,6 +52,18 @@ export class EmailShortcut {
     this.e_From = data.e_From;
   }
 
+  static const insertQuery: string = `INSERT INTO ${Cassandra.keyspace}.email_shortcuts (
+    e_domain, e_subject, e_preview,
+    e_owners_uuid, e_email_uuid, e_uid,
+    e_flags, e_bucket, e_mailbox,
+    e_size_octets, e_from
+  ) VALUES (
+    ?, ?, ?,
+    ?, ?, ?,
+    ?, ?, ?,
+    ?, ?
+  )`;
+
   public static fromMap = (map: any) => {
     return new EmailShortcut({
       e_Domain: map['e_domain'],
@@ -69,19 +82,7 @@ export class EmailShortcut {
 
   public save = (): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      const query: string = `INSERT INTO ${Cassandra.keyspace}.email_shortcuts (
-        e_domain, e_subject, e_preview,
-        e_owners_uuid, e_email_uuid, e_uid,
-        e_flags, e_bucket, e_mailbox,
-        e_size_octets, e_from
-      ) VALUES (
-        ?, ?, ?,
-        ?, ?, ?,
-        ?, ?, ?,
-        ?, ?
-      )`;
-
-      Cassandra.client.execute(query, [
+      Cassandra.client.execute(EmailShortcut.insertQuery, [
         this.e_Domain, this.e_Subject, this.e_Preview,
         this.e_OwnersUUID, this.e_EmailUUID, this.e_UID,
         this.e_Flags, this.e_Bucket, this.e_Mailbox,
@@ -237,7 +238,45 @@ export class EmailShortcut {
       }).catch(err => reject(err));
       // End -> EmailShortcut.get()
 		});
-	}
+  };
+  
+  public static bulkMove = (
+		domain: string, ownersUUID: cassandraDriver.types.TimeUuid,
+		mailbox: string, emailUUIDs: cassandraDriver.types.TimeUuid[],
+		targetMailbox: string, e_OwnersBucket: number
+  ): Promise<null> => {
+    return new Promise<null>((resolve, reject) => {
+      let shortcuts: EmailShortcut[] = [];
+      let tasks: any[] = [];
+
+      emailUUIDs.forEach(uuid => {
+        tasks.push(EmailShortcut.get(domain, ownersUUID, mailbox, uuid));
+      });
+
+      Promise.all(tasks).then((results: EmailShortcut[]) => {
+        const batchStatements: {
+          query: string,
+          params: any
+        }[] = results.map(result => {
+          result.e_Mailbox = targetMailbox;
+
+          return {
+            query: EmailShortcut.insertQuery,
+            params: [
+              result.e_Domain, result.e_Subject, result.e_Preview,
+              result.e_OwnersUUID, result.e_EmailUUID, result.e_UID,
+              result.e_Flags, result.e_Bucket, result.e_Mailbox,
+              result.e_SizeOctets, result.e_From
+            ]
+          };
+        });
+
+        Cassandra.client.batch(batchStatements, {
+          prepare: true
+        }).then(() => resolve()).catch(err => reject(err));
+      }).catch(err => reject(err));
+    });
+  };
 
   public static remove = (
     e_Domain: string, e_OwnersUUID: cassandraDriver.types.TimeUuid,

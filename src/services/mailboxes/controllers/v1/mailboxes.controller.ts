@@ -317,6 +317,41 @@ export namespace Controllers
     }).catch(err => {});
   };
 
+  export const POST_BulkMove = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+    if (!validateRequest(req, res, next, {
+      properties: {
+        mailbox: {
+          type: 'string',
+          required: true
+        },
+        mailbox_target: {
+          type: 'string',
+          required: true
+        },
+        email_uuids: {
+          type: 'string',
+          required: true
+        }
+      }
+    })) return;
+
+    let uuids: cassandraDriver.types.TimeUuid[] = [];
+    try {
+      uuids.push(cassandraDriver.types.TimeUuid.fromString(req.body.email_uuid));
+    } catch (err) {
+      return sendInternalServerError(req, res, next, err, __filename);
+    }
+
+    Bearer.authRequest(req, res, next).then(authObj => {
+      EmailShortcut.bulkMove(authObj.domain, authObj.uuid, req.body.mailbox, uuids, req.body.mailbox_target, authObj.bucket).then(() => {
+        res.send(200, 'success');
+      }).catch(err => sendInternalServerError(req, res, next, err, __filename));
+    }).catch(err => {});
+  };
+
   export const POST_MoveEmail = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next
@@ -343,8 +378,7 @@ export namespace Controllers
     let uuid: cassandraDriver.types.TimeUuid;
     try {
       uuid = cassandraDriver.types.TimeUuid.fromString(req.body.email_uuid);
-    } catch (err)
-    {
+    } catch (err) {
       return sendInternalServerError(req, res, next, err, __filename);
     }
 

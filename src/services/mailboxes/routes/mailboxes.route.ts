@@ -38,5 +38,9 @@ export namespace Routes
     server.post('/erase-trash', restify.plugins.conditionalHandler([
       {version: '1.0.0', handler: MailboxesControllers.POST_EraseTrash}
     ]));
+
+    server.post('/email/bulk-move', restify.plugins.conditionalHandler([
+      {version: '1.0.0', handler: MailboxesControllers.POST_BulkMove}
+    ]));
   };
 }
