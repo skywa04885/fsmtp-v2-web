@@ -102,7 +102,7 @@ export namespace Controllers
             e_subject: shortcut.e_Subject,
             e_preview: shortcut.e_Preview,
             e_email_uuid: shortcut.e_EmailUUID,
-            e_uuid: shortcut.e_UID,
+            e_uuid: shortcut.e_EmailUUID,
             e_flags: shortcut.e_Flags,
             e_bucket: shortcut.e_Bucket,
             e_size_octets: shortcut.e_SizeOctets,
