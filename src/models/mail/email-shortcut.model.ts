@@ -222,8 +222,8 @@ export class EmailShortcut {
           // Updates the stats, and gets the new uid for the email
           //  this is important since we do not want to have any dupe UID
           //  in the archive
-          MailboxStatus.removeOneEmail(e_OwnersBucket, domain, ownersUUID, mailbox).then(() => {
-            MailboxStatus.addOneEmail(e_OwnersBucket, domain, ownersUUID, targetMailbox).then(status => {
+          MailboxStatus.removeEmails(e_OwnersBucket, domain, ownersUUID, mailbox, 1).then(() => {
+            MailboxStatus.addEmails(e_OwnersBucket, domain, ownersUUID, targetMailbox, 1).then(status => {
               shortcut.e_Mailbox = targetMailbox;
               shortcut.e_UID = <number>status.s_NextUID;
 
@@ -265,88 +265,96 @@ export class EmailShortcut {
 		targetMailbox: string, e_OwnersBucket: number
   ): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      if (targetMailbox === 'INBOX.Trash' || mailbox === 'INBOX.Trash') {
-        let tasks: any[] = [];
-
-        emailUUIDs.forEach(uuid => {
-          tasks.push(EmailShortcut.getFlags(domain, ownersUUID, mailbox, uuid));
-        });
-
-        let numberIndex: number = 0;
-        Promise.all(tasks).then((results: number[]) => {
-          const batchStatements: {
-            query: string,
-            params: any
-          }[] = results.map(result => {
-            return {
-              query: `UPDATE ${Cassandra.keyspace}.email_shortcuts
-              SET e_flags=?
-              WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`,
-              params: [
-                result, domain, ownersUUID, mailbox, emailUUIDs[numberIndex++]
-              ]
-            };
-          });
-
-          Cassandra.client.batch(batchStatements, {
-            prepare: true
-          }).then(() => resolve()).catch(err => reject(err));
-        }).catch(err => reject(err));
-      } else {
-        let tasks: any[] = [];
-
-        emailUUIDs.forEach(uuid => {
-          tasks.push(EmailShortcut.get(domain, ownersUUID, mailbox, uuid));
-        });
-  
-        Promise.all(tasks).then((results: EmailShortcut[]) => {
-          const batchStatements: {
-            query: string,
-            params: any
-          }[] = results.map(result => {
-            return {
-              query: `INSERT INTO ${Cassandra.keyspace}.email_shortcuts (
-                e_domain, e_subject, e_preview,
-                e_owners_uuid, e_email_uuid, e_uid,
-                e_flags, e_bucket, e_mailbox,
-                e_size_octets, e_from
-              ) VALUES (
-                ?, ?, ?,
-                ?, ?, ?,
-                ?, ?, ?,
-                ?, ?
-              )`,
-              params: [
-                result.e_Domain, result.e_Subject, result.e_Preview,
-                result.e_OwnersUUID, result.e_EmailUUID, result.e_UID,
-                result.e_Flags, result.e_Bucket, targetMailbox,
-                result.e_SizeOctets, result.e_From
-              ]
-            };
-          });
-  
-          Cassandra.client.batch(batchStatements, {
-            prepare: true
-          }).then(() => {
-            const batchDeleteStatements: {
-              query: string,
-              params: any
-            }[] = results.map(result => {
-              return {
-                query: `DELETE FROM ${Cassandra.keyspace}.email_shortcuts
-                WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`,
-                params: [
-                  result.e_Domain, result.e_OwnersUUID, result.e_Mailbox, result.e_EmailUUID
-                ]
-              };  
+      MailboxStatus.removeEmails(e_OwnersBucket, domain, ownersUUID, mailbox, emailUUIDs.length).then(() => {
+        MailboxStatus.addEmails(e_OwnersBucket, domain, ownersUUID, targetMailbox, emailUUIDs.length).then(status => {
+          if (targetMailbox === 'INBOX.Trash' || mailbox === 'INBOX.Trash') {
+            let tasks: any[] = [];
+    
+            emailUUIDs.forEach(uuid => {
+              tasks.push(EmailShortcut.getFlags(domain, ownersUUID, mailbox, uuid));
             });
+    
+            let numberIndex: number = 0;
+            Promise.all(tasks).then((results: number[]) => {
+              const batchStatements: {
+                query: string,
+                params: any
+              }[] = results.map(result => {
+                if (targetMailbox === 'INBOX.Trash') result |= EmailFlags.Deleted;
+                else result &= ~EmailFlags.Deleted;
 
-            Cassandra.client.batch(batchDeleteStatements, {
-              prepare: true
-            }).then(() => resolve()).catch(err => reject(err));
-          }).catch(err => reject(err));
+                return {
+                  query: `UPDATE ${Cassandra.keyspace}.email_shortcuts
+                  SET e_flags=?
+                  WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`,
+                  params: [
+                    result, domain, ownersUUID, mailbox, emailUUIDs[numberIndex++]
+                  ]
+                };
+              });
+    
+              Cassandra.client.batch(batchStatements, {
+                prepare: true
+              }).then(() => resolve()).catch(err => reject(err));
+            }).catch(err => reject(err));
+          } else {
+            let tasks: any[] = [];
+    
+            emailUUIDs.forEach(uuid => {
+              tasks.push(EmailShortcut.get(domain, ownersUUID, mailbox, uuid));
+            });
+      
+            Promise.all(tasks).then((results: EmailShortcut[]) => {
+              const batchStatements: {
+                query: string,
+                params: any
+              }[] = results.map(result => {
+                return {
+                  query: `INSERT INTO ${Cassandra.keyspace}.email_shortcuts (
+                    e_domain, e_subject, e_preview,
+                    e_owners_uuid, e_email_uuid, e_uid,
+                    e_flags, e_bucket, e_mailbox,
+                    e_size_octets, e_from
+                  ) VALUES (
+                    ?, ?, ?,
+                    ?, ?, ?,
+                    ?, ?, ?,
+                    ?, ?
+                  )`,
+                  params: [
+                    result.e_Domain, result.e_Subject, result.e_Preview,
+                    result.e_OwnersUUID, result.e_EmailUUID, result.e_UID,
+                    result.e_Flags, result.e_Bucket, targetMailbox,
+                    result.e_SizeOctets, result.e_From
+                  ]
+                };
+              });
+      
+              Cassandra.client.batch(batchStatements, {
+                prepare: true
+              }).then(() => {
+                const batchDeleteStatements: {
+                  query: string,
+                  params: any
+                }[] = results.map(result => {
+                  return {
+                    query: `DELETE FROM ${Cassandra.keyspace}.email_shortcuts
+                    WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`,
+                    params: [
+                      result.e_Domain, result.e_OwnersUUID, result.e_Mailbox, result.e_EmailUUID
+                    ]
+                  };  
+                });
+    
+                Cassandra.client.batch(batchDeleteStatements, {
+                  prepare: true
+                }).then(() => resolve()).catch(err => reject(err));
+              }).catch(err => reject(err));
+            }).catch(err => reject(err));
+          }
         }).catch(err => reject(err));
-      }
+        // End -> MailboxStatus.addOneEmail()
+      }).catch(err => reject(err));
     });
   };
 

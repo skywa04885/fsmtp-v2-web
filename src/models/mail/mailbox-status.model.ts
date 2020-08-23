@@ -118,27 +118,29 @@ export class MailboxStatus {
     });
   };
 
-  public static removeOneEmail = (
+  public static removeEmails = (
     s_Bucket: number, s_Domain: string, 
-    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string
+    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string,
+    num: number
   ): Promise<MailboxStatus> => {
     return new Promise<MailboxStatus>((resolve, reject) => {
       MailboxStatus.get(s_Bucket, s_Domain, s_UUID, s_MailboxPath).then(status => {
-        --(<number>status.s_Total);
+        (<number>status.s_Total) -= num;
 
         status.saveTotalAndUID(s_MailboxPath).then(() => resolve(status)).catch(err => reject(err));
       }).catch(err => reject(err));
     });
   };
 
-  public static addOneEmail = (
+  public static addEmails = (
     s_Bucket: number, s_Domain: string, 
-    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string
+    s_UUID: cassandraDriver.types.TimeUuid, s_MailboxPath: string,
+    num: number
   ): Promise<MailboxStatus> => {
     return new Promise<MailboxStatus>((resolve, reject) => {
       MailboxStatus.get(s_Bucket, s_Domain, s_UUID, s_MailboxPath).then(status => {
-        ++(<number>status.s_Total);
-        ++(<number>status.s_NextUID);
+        (<number>status.s_Total) += num;
+        (<number>status.s_NextUID) += num;
 
         status.saveTotalAndUID(s_MailboxPath).then(() => resolve(status)).catch(err => reject(err));
       }).catch(err => reject(err));

@@ -203,8 +203,8 @@ export namespace Controllers
 
         // Checks if we need to perform any further operations
         if (flag === EmailFlags.Deleted) {
-          MailboxStatus.addOneEmail(authObj.bucket, authObj.domain, authObj.uuid, 'INBOX.Trash').then(() => {
-            MailboxStatus.removeOneEmail(authObj.bucket, authObj.domain, authObj.uuid, req.body.mailbox).then(() => {
+          MailboxStatus.addEmails(authObj.bucket, authObj.domain, authObj.uuid, 'INBOX.Trash', 1).then(() => {
+            MailboxStatus.removeEmails(authObj.bucket, authObj.domain, authObj.uuid, req.body.mailbox, 1).then(() => {
               res.send(200, 'success');
             }).catch(err => sendInternalServerError(req, res, next, err, __filename));
           }).catch(err => sendInternalServerError(req, res, next, err, __filename));
@@ -267,8 +267,8 @@ export namespace Controllers
 
         // Checks if we need to perform any further operations
         if (flag === EmailFlags.Deleted) {
-          MailboxStatus.removeOneEmail(authObj.bucket, authObj.domain, authObj.uuid, 'INBOX.Trash').then(() => {
-            MailboxStatus.addOneEmail(authObj.bucket, authObj.domain, authObj.uuid, req.body.mailbox).then(() => {
+          MailboxStatus.removeEmails(authObj.bucket, authObj.domain, authObj.uuid, 'INBOX.Trash', 1).then(() => {
+            MailboxStatus.addEmails(authObj.bucket, authObj.domain, authObj.uuid, req.body.mailbox, 1).then(() => {
               res.send(200, 'success');
             }).catch(err => sendInternalServerError(req, res, next, err, __filename));
           }).catch(err => sendInternalServerError(req, res, next, err, __filename));
