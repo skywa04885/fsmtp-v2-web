@@ -73,18 +73,18 @@ export default class MailboxPage extends React.Component<any, any>
     }
 
     if (showSelectedOptions) {
-      toolbarButtons.push({
+      if (mailbox !== 'INBOX.Trash') toolbarButtons.push({
         icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/></svg>,
         title: 'Move selection to trash',
         key: 'mailbox_selected_delete',
-        callback: () => this.archiveSelection('INBOX.Trash')
+        callback: () => this.moveSelection('INBOX.Trash')
       });
 
-      if (mailbox !== 'INBOX.Archive') toolbarButtons.push({
+      if (mailbox !== 'INBOX.Archive' && mailbox !== 'INBOX.Trash') toolbarButtons.push({
         icon: <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>,
         title: 'Archive messages',
         key: 'mailbox_selected_archive',
-        callback: () => this.archiveSelection('INBOX.Archive')
+        callback: () => this.moveSelection('INBOX.Archive')
       });
     }
 
@@ -96,13 +96,15 @@ export default class MailboxPage extends React.Component<any, any>
     return shortcuts.filter(s => s.e_Selected).map(s => s.e_UUID);
   };
 
-  public archiveSelection = (target: string): void => {
+  public moveSelection = (target: string): void => {
     const { mailbox } = this.state;
-    const { showLoader, hideLoader } = this.props;
+    const { showLoader, hideLoader, updateMailboxStat } = this.props;
   
     showLoader('Performing bulk operation')
-    MailboxesService.bulkMove(mailbox, this.getSelection(), target).then(() => {
+    let selection: string[] = this.getSelection();
+    MailboxesService.bulkMove(mailbox, selection, target).then(() => {
       hideLoader();
+      updateMailboxStat(target, selection.length);
 
       const { shortcuts } = this.state;
       this.setState({

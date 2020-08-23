@@ -267,7 +267,7 @@ export class EmailShortcut {
     return new Promise<null>((resolve, reject) => {
       MailboxStatus.removeEmails(e_OwnersBucket, domain, ownersUUID, mailbox, emailUUIDs.length).then(() => {
         MailboxStatus.addEmails(e_OwnersBucket, domain, ownersUUID, targetMailbox, emailUUIDs.length).then(status => {
-          if (targetMailbox === 'INBOX.Trash' || mailbox === 'INBOX.Trash') {
+          if (targetMailbox === 'INBOX.Trash') {
             let tasks: any[] = [];
     
             emailUUIDs.forEach(uuid => {
@@ -281,7 +281,6 @@ export class EmailShortcut {
                 params: any
               }[] = results.map(result => {
                 if (targetMailbox === 'INBOX.Trash') result |= EmailFlags.Deleted;
-                else result &= ~EmailFlags.Deleted;
 
                 return {
                   query: `UPDATE ${Cassandra.keyspace}.email_shortcuts
