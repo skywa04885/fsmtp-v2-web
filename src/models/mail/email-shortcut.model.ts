@@ -52,7 +52,7 @@ export class EmailShortcut {
     this.e_From = data.e_From;
   }
 
-  static const insertQuery: string = `INSERT INTO ${Cassandra.keyspace}.email_shortcuts (
+  static insertQuery: string = `INSERT INTO ${Cassandra.keyspace}.email_shortcuts (
     e_domain, e_subject, e_preview,
     e_owners_uuid, e_email_uuid, e_uid,
     e_flags, e_bucket, e_mailbox,
@@ -240,41 +240,88 @@ export class EmailShortcut {
 		});
   };
   
+  public static getFlags = (
+    domain: string, ownersUUID: cassandraDriver.types.TimeUuid,
+		mailbox: string, emailUUID: cassandraDriver.types.TimeUuid
+  ): Promise<number> => {
+    return new Promise<number>((resolve, reject) => {
+      const query: string = `SELECT e_flags FROM ${Cassandra.keyspace}.email_shortcuts
+      WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`;
+
+      Cassandra.client.execute(query, [
+        domain, ownersUUID, mailbox, emailUUID
+      ], {
+        prepare: true
+      }).then(result => {
+        if (result.rows.length <= 0) return resolve(undefined);
+        else return resolve(result.rows[0]['e_flags']);
+      }).catch(err => reject(err));
+    });
+  };
+
   public static bulkMove = (
 		domain: string, ownersUUID: cassandraDriver.types.TimeUuid,
 		mailbox: string, emailUUIDs: cassandraDriver.types.TimeUuid[],
 		targetMailbox: string, e_OwnersBucket: number
   ): Promise<null> => {
     return new Promise<null>((resolve, reject) => {
-      let shortcuts: EmailShortcut[] = [];
-      let tasks: any[] = [];
+      if (targetMailbox === 'INBOX.Trash' || mailbox === 'INBOX.Trash') {
+        let tasks: any[] = [];
 
-      emailUUIDs.forEach(uuid => {
-        tasks.push(EmailShortcut.get(domain, ownersUUID, mailbox, uuid));
-      });
-
-      Promise.all(tasks).then((results: EmailShortcut[]) => {
-        const batchStatements: {
-          query: string,
-          params: any
-        }[] = results.map(result => {
-          result.e_Mailbox = targetMailbox;
-
-          return {
-            query: EmailShortcut.insertQuery,
-            params: [
-              result.e_Domain, result.e_Subject, result.e_Preview,
-              result.e_OwnersUUID, result.e_EmailUUID, result.e_UID,
-              result.e_Flags, result.e_Bucket, result.e_Mailbox,
-              result.e_SizeOctets, result.e_From
-            ]
-          };
+        emailUUIDs.forEach(uuid => {
+          tasks.push(EmailShortcut.getFlags(domain, ownersUUID, mailbox, uuid));
         });
 
-        Cassandra.client.batch(batchStatements, {
-          prepare: true
-        }).then(() => resolve()).catch(err => reject(err));
-      }).catch(err => reject(err));
+        let numberIndex: number = 0;
+        Promise.all(tasks).then((results: number[]) => {
+          const batchStatements: {
+            query: string,
+            params: any
+          }[] = results.map(result => {
+            return {
+              query: `UPDATE ${Cassandra.keyspace}.email_shortcuts
+              SET e_flags=?
+              WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`,
+              params: [
+                result, domain, ownersUUID, mailbox, emailUUIDs[numberIndex++]
+              ]
+            };
+          });
+
+          Cassandra.client.batch(batchStatements, {
+            prepare: true
+          }).then(() => resolve()).catch(err => reject(err));
+        }).catch(err => reject(err));
+      } else {
+        let tasks: any[] = [];
+
+        emailUUIDs.forEach(uuid => {
+          tasks.push(EmailShortcut.get(domain, ownersUUID, mailbox, uuid));
+        });
+  
+        Promise.all(tasks).then((results: EmailShortcut[]) => {
+          const batchStatements: {
+            query: string,
+            params: any
+          }[] = results.map(result => {
+            result.e_Mailbox = targetMailbox;
+  
+            return {
+              query: EmailShortcut.insertQuery,
+              params: [
+                result.e_Domain, result.e_Subject, result.e_Preview,
+                result.e_OwnersUUID, result.e_EmailUUID, result.e_UID,
+                result.e_Flags, result.e_Bucket, result.e_Mailbox,
+                result.e_SizeOctets, result.e_From
+              ]
+            };
+          });
+  
+          Cassandra.client.batch(batchStatements, {
+            prepare: true
+          }).then(() => resolve()).catch(err => reject(err));
+        }).catch(err => reject(err));
+      }
     });
   };
 
