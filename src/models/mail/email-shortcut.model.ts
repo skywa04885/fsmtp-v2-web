@@ -304,7 +304,6 @@ export class EmailShortcut {
             query: string,
             params: any
           }[] = results.map(result => {
-            result.e_Mailbox = targetMailbox;
             return {
               query: `INSERT INTO ${Cassandra.keyspace}.email_shortcuts (
                 e_domain, e_subject, e_preview,
@@ -320,7 +319,7 @@ export class EmailShortcut {
               params: [
                 result.e_Domain, result.e_Subject, result.e_Preview,
                 result.e_OwnersUUID, result.e_EmailUUID, result.e_UID,
-                result.e_Flags, result.e_Bucket, result.e_Mailbox,
+                result.e_Flags, result.e_Bucket, targetMailbox,
                 result.e_SizeOctets, result.e_From
               ]
             };
