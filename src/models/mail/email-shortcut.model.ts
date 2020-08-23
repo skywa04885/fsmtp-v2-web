@@ -334,7 +334,7 @@ export class EmailShortcut {
               params: any
             }[] = results.map(result => {
               return {
-                query: `DELETE FROM ${Cassandra.keyspace}
+                query: `DELETE FROM ${Cassandra.keyspace}.email_shortcuts
                 WHERE e_domain=? AND e_owners_uuid=? AND e_mailbox=? AND e_email_uuid=?`,
                 params: [
                   result.e_Domain, result.e_OwnersUUID, result.e_Mailbox, result.e_EmailUUID
