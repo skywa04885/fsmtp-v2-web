@@ -46,7 +46,7 @@ export namespace Controllers
         tls: {
           rejectUnauthorized: false
         },
-        secure: false,
+        secure: true,
         auth: {
           user: `${authObject.username}@${authObject.domain}`,
           pass: authObject.password

@@ -61,14 +61,16 @@ body, html {
 body > a {
   text-align: center;
   display: block;
+  width: calc(100vw - 0.8rem);
 }
 
 .wrapper__outer {
   display: flex;
-  height: calc(100vh - 1rem - 0.8rem - 64px);
+  min-height: calc(100vh - 2rem - 0.8rem - 64px);
   align-items: center;
   justify-content: center;
   margin-top: 1rem;
+  margin-bottom: 1rem;
 
   & > .wrapper {
     max-width: 600px;

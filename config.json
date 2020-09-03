@@ -19,8 +19,8 @@
     "mailer": {
       "port": 4003,
       "address": "0.0.0.0",
-      "smtp_server": "smtp.fannst.nl",
-      "smtp_port": 25
+      "smtp_server": "fannst.nl",
+      "smtp_port": 465
     }
   },
   "global": {
