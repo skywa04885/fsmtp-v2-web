@@ -5,6 +5,21 @@ import {
   EmailTransferEncoding, contentTypeToString
 } from '../models/Email.model';
 
+const parseHeaderValues = (raw: string): Header[] => {
+  let result: Header[] = [];
+
+  raw.split(';').forEach(sec => {
+    let splitted: string[] = sec.split('=');
+    if (splitted.length <= 0) return;
+    result.push({
+      h_Key: splitted[0].trim(),
+      h_Value: splitted[1].trim()
+    });
+  });
+
+  return result;
+};
+
 const parseHeaders = (raw: string): Header[] => {
   let result: Header[] = [];
   
@@ -272,6 +287,11 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
         case 'date':
           target.e_Date = new Date(Date.parse(header.h_Value));
           break;
+        case 'x-fannst-auth': {
+          let pairs: Header[] = parseHeaderValues(header.h_Value);
+          target.e_SPFVerified = pairs.find(a => a.h_Key === 'spf')?.h_Value;
+          break;
+        }
       }
     });
   }

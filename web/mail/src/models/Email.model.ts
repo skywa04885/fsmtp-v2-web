@@ -112,6 +112,7 @@ export class Email {
   public e_From: EmailAddress[];
   public e_To: EmailAddress[];
   public e_Date?: Date;
+  public e_SPFVerified?: string;
 
   public constructor()
   {

@@ -12,7 +12,7 @@ interface EmailShortcutElementProps {
 }
 
 export const EmailShortcutElement = (props: EmailShortcutElementProps): any => {
-  const { e_Subject, e_Preview, e_SizeOctets, e_From, e_Selected } = props.shortcut;
+  const { e_Subject, e_Preview, e_SizeOctets, e_From, e_Selected, e_Mailbox } = props.shortcut;
   const { onClick } = props;
   
   const classes = classnames({
@@ -20,7 +20,8 @@ export const EmailShortcutElement = (props: EmailShortcutElementProps): any => {
     'dark-mode__email-shortcut-elem': Config.darkmode,
     'light-mode__email-shortcut-elem': !Config.darkmode,
     'dark-mode__email-shortcut-elem_sl': Config.darkmode && e_Selected,
-    'light-mode__email-shortcut-elem_sl': !Config.darkmode && e_Selected
+    'light-mode__email-shortcut-elem_sl': !Config.darkmode && e_Selected,
+    'email-shortcut-elem__warn': e_Mailbox === "INBOX.Spam"
   });
 
   const toggleSelected = (e: any) => {    

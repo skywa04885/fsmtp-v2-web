@@ -224,14 +224,16 @@ export default class EmailPage extends React.Component<any, any> {
               <th>Location: </th>
               <td><em>{`${bucket}:${mailbox}:${uuid}`}</em></td>
             </tr>
-			<tr>
-				<th>Connection</th>
-				<td><small>{ (email?.e_Headers?.find(a => a.h_Key === 'x-fannst-conn')?.h_Value) ?? 'Unknown' }</small></td>
-			</tr>
-			<tr>
-				<th>Mailed By</th>
-				<td><small>{ (email?.e_Headers?.find(a => a.h_Key === 'x-fannst-conn')?.h_Value) ?? 'Unknown' }</small></td>
-			</tr>
+            <tr>
+              <th>Connection</th>
+              <td><small>{ (email?.e_Headers?.find(a => a.h_Key === 'x-fannst-conn')?.h_Value) ?? 'Unknown' }</small></td>
+            </tr>
+            { email?.e_SPFVerified ? (
+              <tr>
+                <th>SPF</th>
+                <td><em>{ email?.e_SPFVerified }</em></td>
+              </tr>
+            ) : null }
             <tr>
               <th>Sections: </th>
               <td>

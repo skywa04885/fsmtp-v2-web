@@ -177,3 +177,11 @@
 .light-mode__email-shortcut-elem_sl {
   background-color: rgba(#fff, .9);
 }
+
+.email-shortcut-elem__warn > a > .email-shortcut-elem__left > p {
+  color: #e73212;
+}
+
+.email-shortcut-elem__warn > a:hover {
+  border-left: 2px solid #e73212;
+}
