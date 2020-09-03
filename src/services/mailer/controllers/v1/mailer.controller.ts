@@ -58,6 +58,7 @@ export namespace Controllers
         text: req.body.text,
         html: req.body.html,
         headers: {
+          'X-Mailer': 'LukeMail 1.0.0 (via FSMTP-V2)',
           'X-Fannst-Origin': 'Fannst Webmail'
         }
       }).then(info => {
