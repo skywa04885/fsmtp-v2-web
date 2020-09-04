@@ -290,6 +290,7 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
         case 'x-fannst-auth': {
           let pairs: Header[] = parseHeaderValues(header.h_Value);
           target.e_SPFVerified = pairs.find(a => a.h_Key === 'spf')?.h_Value;
+          target.e_DKIMVerified = pairs.find(a => a.h_Key === 'dkim')?.h_Value;
           break;
         }
       }

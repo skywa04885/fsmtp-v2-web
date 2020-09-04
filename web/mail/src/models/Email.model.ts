@@ -113,6 +113,7 @@ export class Email {
   public e_To: EmailAddress[];
   public e_Date?: Date;
   public e_SPFVerified?: string;
+  public e_DKIMVerified?: string;
 
   public constructor()
   {

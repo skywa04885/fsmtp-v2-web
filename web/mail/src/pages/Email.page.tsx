@@ -1,5 +1,6 @@
 import React, { AnchorHTMLAttributes } from 'react';
 import classnames from 'classnames';
+import ReactDOMServer from 'react-dom/server';
 
 import { MailboxesService } from '../services/Mailboxes.service';
 import { parse } from '../parsers/MIMEParser.parser';
@@ -234,6 +235,12 @@ export default class EmailPage extends React.Component<any, any> {
                 <td><em>{ email?.e_SPFVerified }</em></td>
               </tr>
             ) : null }
+            { email?.e_DKIMVerified ? (
+              <tr>
+                <th>DKIM</th>
+                <td><em>{ email?.e_DKIMVerified }</em></td>
+              </tr>
+            ) : null }
             <tr>
               <th>Sections: </th>
               <td>
@@ -351,13 +358,117 @@ export default class EmailPage extends React.Component<any, any> {
 
   public viewRaw = (): void => {
     const { raw } = this.state;
+    const { email } = this.state;
 
-    const encoded = raw?.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+    const encoded = raw?.replace(/[\u00A0-\u9999<>\&]/gim, i => {
       return '&#'+i.charCodeAt(0)+';';
     });
 
     const wind = window.open('', 'Raw message', 'width=600,height=400');
-    wind?.document.write(encoded?.replace(/\r\n/g, '<br />') ?? '');
+
+    const rowStyle = {};
+    const tableHeadStyle = {
+      border: '1px solid #e0e0e0',
+      padding: '0.4rem',
+      color: '#2b2b2b'
+    };
+    const tableItemStyle = {
+      border: '1px solid #e0e0e0',
+      padding: '0.4rem',
+      color: '#414141',
+      fontSize: '0.9rem'
+    };
+
+    wind?.document.write(
+      ReactDOMServer.renderToStaticMarkup(
+        <html style={{
+          margin: '0',
+          fontFamily: 'sans-serif'
+        }}>
+          <body style={{
+            backgroundColor: '#eeeeee',
+            margin: '0'
+          }}>
+            <div style={{
+              padding: '2rem',
+              borderBottom: '1px solid #dadada',
+              backgroundColor: '#fff'
+            }} className="header">
+              <table style={{
+                textAlign: 'left',
+                borderCollapse: 'collapse',
+                margin: 'auto',
+                maxWidth: '900px',
+                padding: '2rem',
+                width: 'calc(100vw - 4rem)'
+              }}>
+                <thead>
+                  <tr>
+                    <th style={ tableHeadStyle }>Key</th>
+                    <th style={ tableHeadStyle }>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>Message ID</th>
+                    <td style={ tableItemStyle }><span style={{
+                      color: '#48a708'
+                    }}>{ email?.e_Headers.find(a => a.h_Key === 'message-id')?.h_Value ?? 'Unknown' }</span></td>
+                  </tr>
+                  <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>From</th>
+                    <td style={ tableItemStyle }>{ email?.e_From.map((a: EmailAddress) => `${a.e_Name} <${a.e_Address}>`).join(', ') ?? 'Unknown' }</td>
+                  </tr>
+                  <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>To</th>
+                    <td style={ tableItemStyle }>{ email?.e_To.map((a: EmailAddress) => `${a.e_Name} <${a.e_Address}>`).join(', ') ?? 'Unknown' }</td>
+                  </tr>
+                  <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>Date</th>
+                    <td style={ tableItemStyle }>{ email?.e_Date?.toUTCString() ?? 'Unknown' }</td>
+                  </tr>
+                  <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>Subject</th>
+                    <td style={ tableItemStyle }>{ email?.e_Subject ?? 'Unknown' }</td>
+                  </tr>
+                  <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>X-Mailer</th>
+                    <td style={ tableItemStyle }>{ email?.e_Headers.find(a => a.h_Key === 'x-mailer')?.h_Value ?? 'Unknown' } </td>
+                  </tr>
+                  <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>SPF</th>
+                    <td style={ tableItemStyle }><em style={{
+                      color: '#0875a7'
+                    }}>{ email?.e_SPFVerified ?? 'Unknown' }</em></td>
+                  </tr>
+                  <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>DKIM</th>
+                    <td style={ tableItemStyle }><em style={{
+                      color: '#0875a7'
+                    }}>{ email?.e_DKIMVerified ?? 'Unknown' }</em></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style={{
+              margin: '2rem'
+            }} className="wrapper"><pre style={{
+              backgroundColor: '#fff',
+              color: '#ff4444',
+              border: '1px solid #e0e0e0',
+              borderRadius: '0.3rem',
+              padding: '1rem',
+              wordWrap: 'break-word',
+              overflowX: 'auto',
+              whiteSpace: 'pre-wrap',
+              margin: 'auto',
+              maxWidth: '900px',
+              width: 'calc(100vw - 6rem)'
+            }} dangerouslySetInnerHTML={{__html: encoded ?? ''}}></pre></div>
+          </body>
+        </html>
+      )
+    );
   };
 
   public render = (): any => {
