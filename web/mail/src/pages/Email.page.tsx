@@ -349,6 +349,17 @@ export default class EmailPage extends React.Component<any, any> {
     head.appendChild(node);
   };
 
+  public viewRaw = (): void => {
+    const { raw } = this.state;
+
+    const encoded = raw?.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+      return '&#'+i.charCodeAt(0)+';';
+    });
+
+    const wind = window.open('', 'Raw message', 'width=600,height=400');
+    wind?.document.write(encoded?.replace(/\r\n/g, '<br />') ?? '');
+  };
+
   public render = (): any => {
     const { email, error } = this.state;
 
@@ -461,10 +472,13 @@ export default class EmailPage extends React.Component<any, any> {
                     <button type="button">Reply</button>
                   </li> */}
                   <li>
-                    <button type="button" onClick={this.showDetails}>Details</button>
+                    <button type="button" onClick={ this.showDetails }>Details</button>
                   </li>
                   <li>
-                    <button type="button" onClick={this.download}>Download</button>
+                    <button type="button" onClick={ this.download }>Download</button>
+                  </li>
+                  <li>
+                    <button type="button" onClick={ this.viewRaw }>View raw</button>
                   </li>
                 </ul>
               </div>
