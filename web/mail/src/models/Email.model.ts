@@ -114,6 +114,7 @@ export class Email {
   public e_Date?: Date;
   public e_SPFVerified?: string;
   public e_DKIMVerified?: string;
+  public e_SUVerified?: string;
 
   public constructor()
   {
