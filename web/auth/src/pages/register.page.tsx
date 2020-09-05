@@ -15,12 +15,14 @@ export default class LoginPage extends React.Component<any, any> {
   public state: {
     username: string,
     password: string,
+    password_confirm: string,
     full_name: string,
     birth_date: string,
     recovery_email: string,
     errors: {
       username: any,
       password: any,
+      password_confirm: any,
       full_name: any,
       birth_date: any,
       recovery_email: any
@@ -35,12 +37,14 @@ export default class LoginPage extends React.Component<any, any> {
     this.state = {
       username: '',
       password: '',
+      password_confirm: '',
       full_name: '',
       birth_date: '',
       recovery_email: '',
       errors: {
         username: '',
         password: '',
+        password_confirm: '',
         full_name: '',
         birth_date: '',
         recovery_email: ''
@@ -114,6 +118,11 @@ export default class LoginPage extends React.Component<any, any> {
         else if (value.length < 12) errors.password = 'Please enter more than 12 chars';
         else errors.password = null;
         break; 
+      case 'password_confirm':
+        if (value.length === 0 ) errors.password_confirm = 'Please confirm your password';
+        else if (value.length < 12) errors.password_confirm = 'Please enter more than 12 chars';
+        else errors.password_confirm = null;
+        break; 
       case 'full_name':
         if (value.length === 0 ) errors.full_name = 'Please enter your name';
         else if (value.length < 5) errors.full_name = 'Please enter more than 5 chars';
@@ -136,12 +145,12 @@ export default class LoginPage extends React.Component<any, any> {
   private valid = (): boolean => {
     const { errors } = this.state;
     return errors.username === null && errors.password === null && 
-      errors.full_name === null && errors.birth_date === null;
+      errors.full_name === null && errors.birth_date === null && errors.password_confirm === null;
   }
 
   public render = (): any =>
   {
-    const { error, username, password, errors, full_name, recovery_email, birth_date } = this.state;
+    const { error, username, password, password_confirm, errors, full_name, recovery_email, birth_date } = this.state;
     const valid: boolean = this.valid();
 
     return (
@@ -183,6 +192,14 @@ export default class LoginPage extends React.Component<any, any> {
               required value={password}
               name="password"
               label="Password"
+              type="password"
+            />
+            <FormField
+              onChange={this.onChange}
+              error={errors.password_confirm}
+              required value={password_confirm}
+              name="password_confirm"
+              label="Confirm"
               type="password"
             />
             <hr />

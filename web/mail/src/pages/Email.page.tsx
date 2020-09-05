@@ -241,7 +241,7 @@ export default class EmailPage extends React.Component<any, any> {
                 <td><em>{ email?.e_DKIMVerified }</em></td>
               </tr>
             ) : null }
-            { email?.e_DKIMVerified ? (
+            { email?.e_SUVerified ? (
               <tr>
                 <th>SU</th>
                 <td><em>{ email?.e_SUVerified }</em></td>
@@ -374,14 +374,14 @@ export default class EmailPage extends React.Component<any, any> {
 
     const rowStyle = {};
     const tableHeadStyle = {
-      border: '1px solid #e0e0e0',
+      border: Config.darkmode ? '1px solid rgba(220, 220, 220, 0.5)' : '1px solid #e0e0e0',
       padding: '0.4rem',
-      color: '#2b2b2b'
+      color: Config.darkmode ? '#fff' : '#2b2b2b'
     };
     const tableItemStyle = {
-      border: '1px solid #e0e0e0',
+      border: Config.darkmode ? '1px solid rgba(220, 220, 220, 0.5)' : '1px solid #e0e0e0',
       padding: '0.4rem',
-      color: '#414141',
+      color: Config.darkmode ? '#e7e7e7' : '#414141',
       fontSize: '0.9rem'
     };
 
@@ -392,13 +392,13 @@ export default class EmailPage extends React.Component<any, any> {
           fontFamily: 'sans-serif'
         }}>
           <body style={{
-            backgroundColor: '#eeeeee',
+            backgroundColor:  Config.darkmode ? '#121212' : '#eeeeee',
             margin: '0'
           }}>
             <div style={{
               padding: '2rem',
-              borderBottom: '1px solid #dadada',
-              backgroundColor: '#fff'
+              borderBottom: Config.darkmode ? '1px solid rgba(220, 220, 220, 0.2)' : '1px solid #dadada',
+              backgroundColor: Config.darkmode ? '#242424' : '#fff'
             }} className="header">
               <table style={{
                 textAlign: 'left',
@@ -465,9 +465,9 @@ export default class EmailPage extends React.Component<any, any> {
             <div style={{
               margin: '2rem'
             }} className="wrapper"><pre style={{
-              backgroundColor: '#fff',
+              backgroundColor: Config.darkmode ? '#242424' : '#fff',
               color: '#ff4444',
-              border: '1px solid #e0e0e0',
+              border:  Config.darkmode ? '1px solid rgba(220, 220, 220, 0.5)' : '1px solid #e0e0e0',
               borderRadius: '0.3rem',
               padding: '1rem',
               wordWrap: 'break-word',
