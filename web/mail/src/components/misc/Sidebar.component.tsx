@@ -170,6 +170,10 @@ export class Sidebar extends React.Component<any, any> {
             </p>
             <MusicPlayer />
           </li>
+          <hr />
+          <li className="sidebar__ul__li">
+            <p className="sidebar__ul__li__text">FSMTP-V2 By Luke Rieff</p>
+          </li>
         </ul>
       </div>
     );

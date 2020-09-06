@@ -24,6 +24,13 @@
     }
 
     & > .sidebar__ul__li {
+      .sidebar__ul__li__text {
+        color: rgba(#fff, .5);
+        font-size: .8rem;
+        margin: 1rem;
+        font-weight: 500;
+      }
+
       & > .sidebar__ul__li__title {
         margin: 1rem;
         user-select: none;
