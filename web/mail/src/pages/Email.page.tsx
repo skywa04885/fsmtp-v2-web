@@ -115,9 +115,27 @@ export default class EmailPage extends React.Component<any, any> {
   };
 
   public goBack = () => {
-    const { mailbox } = this.props.match.params;
-    const { history } = this.props;
-    history.push(`/mailbox/${mailbox}`);
+    let args: any = {};
+
+    let splitted: string[] = document.location.search.substr(1).split('&');
+    splitted.forEach(elem => {
+      let key: string, value: string;
+
+      key = elem.substring(0, elem.indexOf('='));
+      value = elem.substr(elem.indexOf('=') + 1);
+
+      args[key] = value;
+    });
+
+    if (args['ret']) {
+      const { history } = this.props;
+      history.push(decodeURIComponent(args['ret']));
+    } else {
+      const { mailbox } = this.props.match.params;
+      const { history } = this.props;
+      
+      history.push(`/mailbox/${mailbox}`);
+    }
   };
 
   public renderAddressList = (list?: EmailAddress[]): any => {

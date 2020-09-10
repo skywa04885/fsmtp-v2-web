@@ -21,18 +21,20 @@ import { Email } from './models/Email.model';
 import EmailClients from './pages/EmailClients.page';
 import DeveloperInfo from './pages/DeveloperInfo.page';
 import Config from './Config';
+import SearchPage from './pages/Search.page';
 
 const StartupSound = require('./static/startup.mp3');
 
 interface AppProps {}
 
-class App extends React.Component {
+class App extends React.Component<any, any> {
   state: {
     loading: boolean;
     loaderMessage: string;
     mailboxes: Mailbox[];
     mailboxStats: MailboxStatus[];
     ready: boolean;
+    redirectToSearch?: string
   };
 
   private composeMenu: React.RefObject<Compose> = React.createRef<Compose>();
@@ -52,6 +54,7 @@ class App extends React.Component {
       mailboxes: [],
       mailboxStats: [],
       ready: false,
+      redirectToSearch: undefined
     };
   }
 
@@ -105,8 +108,14 @@ class App extends React.Component {
     document.getElementById('sidebar')?.classList.toggle('sidebar__hidden');
   };
 
+  public performSearch = (query: string): void => {
+    this.setState({
+      redirectToSearch: query
+    });
+  };
+
   public render = (): any => {
-    const { loading, loaderMessage, ready } = this.state;
+    const { loading, loaderMessage, ready, redirectToSearch } = this.state;
 
     const classes = classnames({
       'app': true,
@@ -133,9 +142,10 @@ class App extends React.Component {
               updateMailboxStat={this.sidebar?.current?.updateMailboxStat}
               ref={this.composeMenu}
             />
-            <Header toggleDarmMode={this.toggleDarmMode} toggleSidebar={this.toggleSidebar} />
+            <Header performSearch={ this.performSearch } toggleDarmMode={this.toggleDarmMode} toggleSidebar={this.toggleSidebar} />
             <Toolbar ref={this.toolbar} />
             <div className="app__content">
+              { redirectToSearch !== undefined ? <Redirect to={ `/search/${redirectToSearch}` } /> : null }
               {!ready ? null : (
                 <Switch>
                   <Route
@@ -144,6 +154,24 @@ class App extends React.Component {
                       return (
                         <MailboxPage
                           ref={this.mailboxPage}
+                          history={props.history}
+                          updateMailboxStat={
+                            this.sidebar?.current?.updateMailboxStat
+                          }
+                          match={props.match}
+                          setToolbar={this.toolbar?.current?.setToolbar}
+                          onCompose={this.composeMenu.current?.show}
+                          showLoader={this.loader?.current?.show}
+                          hideLoader={this.loader?.current?.hide}
+                        />
+                      );
+                    }}
+                  />
+                  <Route
+                    path="/search/:query"
+                    component={(props: any) => {
+                      return (
+                        <SearchPage
                           history={props.history}
                           updateMailboxStat={
                             this.sidebar?.current?.updateMailboxStat

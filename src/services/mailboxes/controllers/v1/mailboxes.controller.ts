@@ -13,6 +13,111 @@ import { Cassandra } from '../../../../helpers/database.helper';
 
 export namespace Controllers
 {
+  const enum SearchQueryType {
+    From, Subject, Unspecified
+  };
+
+  export const GET_Search = (
+    req: restify.Request, res: restify.Response, 
+    next: restify.Next
+  ) => {
+    let query: any;
+    if (req.headers['search-query']) {
+      query = req.headers['search-query'];
+    } else return next(new errors.InvalidHeaderError({}, "Search-Query header is required"));
+
+    let from: number;
+    if (!req.headers.from) from = 0;
+    else from = parseInt(req.headers.from.toString());
+  
+    let to: number;
+    if (!req.headers.to) to = 60;
+    else to = parseInt(req.headers.to.toString());
+
+    // Checks the type of query we will perform
+    let queryType: SearchQueryType;
+    if (query[0] == '|') {
+      if (query.substring(0, '|from:'.length) === '|from:') queryType = SearchQueryType.From;
+      if (query.substring(0, '|subject:'.length) === '|subject:') queryType = SearchQueryType.Subject;
+      else queryType = SearchQueryType.Unspecified;
+    } else queryType = SearchQueryType.Unspecified;
+
+    if (query.indexOf(':') != -1)
+      query = query.substring(query.indexOf(':') + 1, query.length);
+      
+    let regexp = new RegExp(query, 'gi');
+
+    Bearer.authRequest(req, res, next).then(authObj => {
+      // Prepares the query and starts searching in the database
+      //  for the matches
+
+      const query: string = `SELECT * FROM ${Cassandra.keyspace}.email_shortcuts
+      WHERE e_domain=? AND e_owners_uuid=? ALLOW FILTERING`;
+
+      // Creates the query stream, this will be used
+      //  to search through thje data for matches
+
+      const stream = Cassandra.client.stream(query, [ authObj.domain, authObj.uuid], {
+        autoPage: true,
+        prepare: true
+      });
+
+      // Starts looping and preparing the content against the query
+      let matchCount: number = 0;
+      let results: EmailShortcut[] = [];
+      stream.on('readable', () => {
+        let row: any;
+
+        while (row = (<any>stream).read()) {
+          let match: boolean = false;
+
+          // Checks how we should match the current message
+          switch (queryType) {
+            case SearchQueryType.Subject:
+              if ((<string>row['e_subject']).toLowerCase().match(regexp)) match = true;
+              break;
+            case SearchQueryType.From:
+              if ((<string>row['e_from']).toLowerCase().match(regexp)) match = true;
+              break;
+            default:
+              if ((<string>row['e_subject']).toLowerCase().match(regexp)) {
+                match = true;
+              } else if ((<string>row['e_from']).toLowerCase().match(regexp)) {
+                match = true;
+              }
+              break;
+          }
+
+          // Checks if we should proceed searching or stop
+          if (match && matchCount < from) matchCount++;
+          if (match && matchCount >= to) (<any>stream).destroy();
+          else if (match) results.push(EmailShortcut.fromMap(row));
+        }
+      });
+
+      stream.on('close', () => {
+        res.json(results.map(shortcut => {
+          return {
+            e_domain: shortcut.e_Domain,
+            e_subject: shortcut.e_Subject,
+            e_preview: shortcut.e_Preview,
+            e_owners_uuid: shortcut.e_OwnersUUID,
+            e_email_uuid: shortcut.e_EmailUUID,
+            e_uid: shortcut.e_UID,
+            e_flags: shortcut.e_Flags,
+            e_bucket: shortcut.e_Bucket,
+            e_mailbox: shortcut.e_Mailbox,
+            e_size_octets: shortcut.e_SizeOctets,
+            e_from: shortcut.e_From
+          };
+        }));
+      });
+
+      stream.on('error', err => sendInternalServerError(req, res, next, err, __filename));
+      // -> End Bearer.authRequest()
+    }).catch(err => {});
+  }
+
   export const GET_GetMailboxes = (
     req: restify.Request, res: restify.Response, 
     next: restify.Next

@@ -13,7 +13,7 @@ interface EmailShortcutElementProps {
 
 export const EmailShortcutElement = (props: EmailShortcutElementProps): any => {
   const { e_Subject, e_Preview, e_SizeOctets, e_From, e_Selected, e_Mailbox } = props.shortcut;
-  const { onClick } = props;
+  const { onClick, toggleSelected } = props;
   
   const classes = classnames({
     'email-shortcut-elem': true,
@@ -24,7 +24,7 @@ export const EmailShortcutElement = (props: EmailShortcutElementProps): any => {
     'email-shortcut-elem__warn': e_Mailbox === "INBOX.Spam"
   });
 
-  const toggleSelected = (e: any) => {    
+  const toggle = (e: any) => {    
     const { toggleSelected } = props;
     const { e_UID } = props.shortcut;
 
@@ -35,9 +35,9 @@ export const EmailShortcutElement = (props: EmailShortcutElementProps): any => {
     <li className={ classes }>
       <a onClick={ onClick } title="Open message">
         <div className="email-shortcut-elem__left">
-          <div className="email-shortcut-elem__left__cb">
-            <input checked={e_Selected} onChange={ toggleSelected } onClick={ e => e.stopPropagation() } type="checkbox" />
-          </div>
+          { toggleSelected ? <div className="email-shortcut-elem__left__cb">
+            <input checked={e_Selected} onChange={ toggle } onClick={ e => e.stopPropagation() } type="checkbox" />
+          </div> : null }
           <p>{ e_From }</p>
         </div>
         <div className="email-shortcut-elem__middle">

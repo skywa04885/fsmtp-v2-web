@@ -4,6 +4,24 @@
   background-color: rgba(#000, 0.1);
 
   & > .header__center {
+    .header__search-suggestions {
+      background-color: #242424;
+      border: 1px solid rgba(#4e4e4e, 0.5);
+      border-top: none;
+
+      & > ul {
+        & > li {
+          & > button {
+            color: #858585;
+
+            &:hover {
+              background-color: #1a1a1a;
+            }
+          }
+        }
+      }
+    }
+
     & > .header__center__search-form {
       background-color: #242424;
       border: 1px solid rgba(#4e4e4e, 0.5);
@@ -35,6 +53,23 @@
   background-color: rgba(#fff, 0.05);  
 
   & > .header__center {
+    .header__search-suggestions {
+      background-color: #fff;
+      border-top: 1px solid #e4e4e4;
+
+      & > ul {
+        & > li {
+          & > button {
+            color: #858585;
+
+            &:hover {
+              background-color: #eeeeee;
+            }
+          }
+        }
+      }
+    }
+
     & > .header__center__search-form {
       background-color: #fff;
 
@@ -112,11 +147,44 @@
     margin-left: 2rem;
     margin-right: 1rem;
 
+    &:focus-within > .header__search-suggestions {
+      display: block;
+    }
+
+    .header__search-suggestions {
+      position: absolute;
+      z-index: 1000;
+      max-width: 500px;
+      width: 100%;
+      display: none;
+
+      & > ul {
+        & > li {
+          & > button {
+            background: none;
+            border: none;
+            outline: none;
+            display: block;
+            padding: .4rem .8rem;
+            text-align: left;
+            width: 100%;
+            transition: all .12s;
+            font-size: 0.9rem;
+            cursor: pointer;
+
+            &:hover {
+              border-left: 2px solid map-get($colors, primary);
+              color: map-get($colors, primary);
+            }
+          }
+        }
+      }
+    }
+
     & > .header__center__search-form {
       display: flex;
       max-width: 500px;
       border-radius: $borderRadius;
-
 
       @media only screen and (max-width: 900px) {
         display: none;

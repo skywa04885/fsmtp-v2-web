@@ -1,4 +1,4 @@
-import React, { FormEvent } from 'react';
+import React, { FormEvent, ChangeEvent } from 'react';
 import classnames from 'classnames';
 import { AccountService } from '../../services/Accounts.service';
 
@@ -11,25 +11,87 @@ interface HeaderProps {
   toggleDarmMode: () => {}
 };
 
+interface SearchbarSuggestion {
+  key: number,
+  value: string
+};
+
 export default class Header extends React.Component<any, any> {
-  state: {
-    showAccount: false
+  public state: {
+    showAccount: false,
+    searchbarValue?: string,
+    searchSuggestions?: SearchbarSuggestion[]
   };
 
   public constructor(props: HeaderProps) {
     super(props);
 
     this.state = {
-      showAccount: false
+      showAccount: false,
+      searchbarValue: undefined,
+      searchSuggestions: []
     };
   }
 
   public onSearch = (e: FormEvent): void => {
+    const { performSearch } = this.props;
+    const { searchbarValue } = this.state;
+
     e.preventDefault();
+    performSearch(searchbarValue);
   };
   
+  public onSearchbarChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const value = e.target.value.trimStart();
+
+    if (value === '')
+      return this.setState({
+        searchbarValue: undefined,
+        SearchSuggestions: undefined
+      });
+
+    const containsEmailSymbol: boolean = value.indexOf('@') !== -1;
+    let searchSuggestions: SearchbarSuggestion[] = [
+      {
+        value: value,
+        key: 3
+      },
+      {
+        value: `|subject:${value}`,
+        key: 4
+      }
+    ];
+
+    // Checks if we need to perform the from/to search
+    if (containsEmailSymbol) {
+      searchSuggestions.push({
+        value: `|to:${value}`,
+        key: 1
+      });
+
+      searchSuggestions.push({
+        value: `|from:${value}`,
+        key: 1
+      });
+    }
+
+    this.setState({
+      searchbarValue: value,
+      searchSuggestions
+    });
+  };
+
+  public onSuggestionClicked = (suggestion: string): void => {
+    this.setState({
+      searchbarValue: suggestion
+    }, () => {
+      const { performSearch } = this.props;
+      performSearch(suggestion);
+    });
+  };
+
   public render = (): any => {
-    const { showAccount } = this.state;
+    const { showAccount, searchbarValue, searchSuggestions } = this.state;
     const { toggleSidebar, toggleDarmMode } = this.props;
 
     const classes = classnames({
@@ -70,7 +132,7 @@ export default class Header extends React.Component<any, any> {
           {/* Search bar */}
           <div className="header__center">
             <form className="header__center__search-form" onSubmit={this.onSearch}>
-              <input type="text" placeholder="Search ..." />
+              <input type="text" placeholder="Search ..." value={ searchbarValue } onChange={ this.onSearchbarChange } />
               <button type="submit">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -83,6 +145,18 @@ export default class Header extends React.Component<any, any> {
                 </svg>
               </button>
             </form>
+            {/* The searchbar suggestions */}
+            { searchSuggestions !== undefined ? (
+              <div className="header__search-suggestions">
+                <ul>
+                  { searchSuggestions.map(suggestion => (
+                    <li>
+                      <button key={ suggestion.key } onClick={ () => this.onSuggestionClicked(suggestion.value) }>{ suggestion.value }</button>
+                    </li>
+                  )) }
+                </ul>
+              </div>
+            ) : null }
           </div>
           {/* Account stuff */}
           <div className="header__right">

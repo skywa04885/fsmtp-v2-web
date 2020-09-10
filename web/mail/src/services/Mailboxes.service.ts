@@ -28,6 +28,25 @@ export class MailboxesService {
     });
   };
 
+  public static search = (query: string): Promise<EmailShortcut[]> => {
+    return new Promise<EmailShortcut[]>((resolve, reject) => {
+      const url: string = Config.buildURL('/search', MailboxesService.port);
+      const options: any = {
+        headers: Object.assign(Config.defaultHeaders, {
+          'Authorization': AccountService.buildBearer(),
+          'Search-Query': query
+        })
+      };
+
+      Axios.get(url, options).then(response => {
+        if (response.status !== 200)
+          return reject(new Error(`${response.status}: ${response.statusText}`));
+
+        resolve(response.data.map((rawStatus: any) => EmailShortcut.fromMap(rawStatus)));
+      }).catch(err => reject(err));
+    });
+  };
+
   public static gatherMailboxes = (): Promise<Mailbox[]> => {
     return new Promise<Mailbox[]>((resolve, reject) => {
       const url: string = Config.buildURL('/get/mailboxes', MailboxesService.port);
