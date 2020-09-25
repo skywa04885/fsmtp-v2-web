@@ -115,7 +115,7 @@ export default class LoginPage extends React.Component<any, any> {
         break;
       case 'password':
         if (value.length === 0 ) errors.password = 'Please enter a password';
-        else if (value.length < 12) errors.password = 'Please enter more than 12 chars';
+        else if (value.length < 8) errors.password = 'Please enter more than 8 chars';
         else errors.password = null;
         break; 
       case 'password_confirm':

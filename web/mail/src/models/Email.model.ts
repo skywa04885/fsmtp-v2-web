@@ -100,7 +100,23 @@ export class EmailAddress {
 
   public static parseArray = (raw: string): EmailAddress[] => {
     let result: EmailAddress[] = [];
-    raw.split(',').forEach(address => result.push(EmailAddress.parse(address)));
+    
+    let stringSequenceStarted: boolean = false;
+    let addressBuffer: string = '';
+    for (let i: number = 0; i < raw.length; ++i) {
+      const c: string = raw.charAt(i);
+      
+      if (c == '"' && !stringSequenceStarted) stringSequenceStarted = true;
+      else if (c == '"' && stringSequenceStarted) stringSequenceStarted = false;
+
+      if (c == ',' && !stringSequenceStarted) {
+        result.push(EmailAddress.parse(addressBuffer));
+        addressBuffer = '';
+      }
+    }
+
+    if (addressBuffer.length > 0) result.push(EmailAddress.parse(addressBuffer));
+
     return result;
   }
 };
