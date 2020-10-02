@@ -10,7 +10,8 @@
       "address": "0.0.0.0"
     },
     "general": {
-      "port": 443
+      "port": 443,
+      "address": "0.0.0.0"
     },
     "mailboxes": {
       "port": 4002,

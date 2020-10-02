@@ -5,6 +5,7 @@ import { Mailbox } from '../models/Mailbox.model';
 import { AccountService } from './Accounts.service';
 import { EmailShortcut, EmailFlags } from '../models/EmailShortcut.model';
 import { MailboxStatus } from '../models/MailboxStatus.model';
+import { decodeMime } from '../parsers/MIMEParser.parser'
 
 export class MailboxesService {
   public static port: number = 4002;
@@ -103,7 +104,12 @@ export class MailboxesService {
         if (response.status !== 200)
           return reject(new Error(`${response.status}: ${response.statusText}`));
 
-        resolve(response.data.map((rawShortcut: any) => EmailShortcut.fromMap(rawShortcut)));
+        resolve(response.data.map((rawShortcut: any) => {
+          let map = EmailShortcut.fromMap(rawShortcut);
+          map.e_Subject = decodeMime(map.e_Subject);
+          map.e_From = decodeMime(map.e_From);
+          return map;
+        }));
       }).catch(err => reject(err));
     });
   };

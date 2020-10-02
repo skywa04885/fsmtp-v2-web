@@ -68,7 +68,9 @@ export default class LoginPage extends React.Component<any, any> {
       if (response.status === 200 && response.data.status)
       {
         cookie.save('sess-bearer', response.data.bearer, {
-          path: '/'
+          path: '/',
+          maxAge: 60 * 60 * 24 * 180, // 180 Days
+          secure: true
         });
         window.location.href = '/mail/inbox';
       } else

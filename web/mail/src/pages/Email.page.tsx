@@ -265,6 +265,12 @@ export default class EmailPage extends React.Component<any, any> {
                 <td><em>{ email?.e_SUVerified }</em></td>
               </tr>
             ) : null }
+            { email?.e_DMARCVerified ? (
+              <tr>
+                <th>DMARC</th>
+                <td><em>{ email?.e_DMARCVerified }</em></td>
+              </tr>
+            ) : null }
             <tr>
               <th>Sections: </th>
               <td>
@@ -422,7 +428,7 @@ export default class EmailPage extends React.Component<any, any> {
                 textAlign: 'left',
                 borderCollapse: 'collapse',
                 margin: 'auto',
-                maxWidth: '900px',
+                maxWidth: '1300px',
                 padding: '2rem',
                 width: 'calc(100vw - 4rem)'
               }}>
@@ -472,6 +478,12 @@ export default class EmailPage extends React.Component<any, any> {
                     }}>{ email?.e_DKIMVerified ?? 'Unknown' }</em></td>
                   </tr>
                   <tr style={ rowStyle }>
+                    <th style={ tableHeadStyle }>DMARC</th>
+                    <td style={ tableItemStyle }><em style={{
+                      color: '#0875a7'
+                    }}>{ email?.e_DMARCVerified ?? 'Unknown' }</em></td>
+                  </tr>
+                  <tr style={ rowStyle }>
                     <th style={ tableHeadStyle }>SU</th>
                     <td style={ tableItemStyle }><em style={{
                       color: '#0875a7'
@@ -492,7 +504,7 @@ export default class EmailPage extends React.Component<any, any> {
               overflowX: 'auto',
               whiteSpace: 'pre-wrap',
               margin: 'auto',
-              maxWidth: '900px',
+              maxWidth: '1300px',
               width: 'calc(100vw - 6rem)'
             }} dangerouslySetInnerHTML={{__html: encoded ?? ''}}></pre></div>
           </body>

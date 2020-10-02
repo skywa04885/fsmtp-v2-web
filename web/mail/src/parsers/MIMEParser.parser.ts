@@ -5,6 +5,45 @@ import {
   EmailTransferEncoding, contentTypeToString
 } from '../models/Email.model';
 
+const prepareText = (raw: string): string => {
+  return raw.split('\r\n').join('<br />')
+    .replace(/\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim, '<a href="$&">$&</a>')
+    .replace(/(^|[^\/])(www\.[\S]+(\b|$))/gim, '<a href="http://$2">$2</a>')
+    .replace(/[\w.]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+/gim, '<a href="mailto:$&">$&</a>')
+};
+
+export const decodeMime = (raw: string): string => {
+  return raw.replace(/\=\?.*?\?\=/gi, (match, p1, offset, string) => {
+    match = match.substring(2, match.length - 2);
+
+    // Gets the first separator, after which we check if it was found
+    //  if not just return the match, else we will get the charset from it
+    let sep: number = match.indexOf('?');
+    if (sep === -1) return match;
+    let charset: string = match.substring(0, sep).toLowerCase();
+
+    // Gets the second separator, after which we check if it was found
+    //  if not just return the match
+    sep = match.indexOf('?', ++sep);
+    if (sep === -1) return match;
+    let encoding: string = match.substring(sep - 1, sep).toLowerCase();
+
+    // Gets the content itself, this will be the rest of the encoded
+    //  header part
+    let content: string = match.substr(++sep);
+
+    // Checks how we should decode the content, this may be base64
+    //  or quoted printable
+    switch (encoding) {
+      case 'b': return decodeURIComponent(escape(atob(content)));
+      case 'q': return decodeQuotedPrintable(content).replace(/_/g, ' ');
+      default:
+        console.error(`Invalid encoding: '${encoding}'`);
+        return match;
+    }
+  });
+}
+
 const parseHeaderValues = (raw: string): Header[] => {
   let result: Header[] = [];
 
@@ -31,7 +70,7 @@ const parseHeaders = (raw: string): Header[] => {
 
     let header: Header = {
       h_Key: rawHeader.substring(0, sepIndex).trim().toLowerCase(),
-      h_Value: rawHeader.substr(++sepIndex).trim()
+      h_Value: decodeMime(rawHeader.substr(++sepIndex).trim())
     };
 
     result.push(header);
@@ -139,11 +178,13 @@ const decodeQuotedPrintable = (raw: string): string => {
     }
   }
 
-  result = result.replace(/=[0-9A-Za-z]{2}/g, (match, capture) => {
+  return decodeURIComponent(escape(result.replace(/=[0-9A-Za-z]{2}/g, (match, capture) => {
     return String.fromCharCode(parseInt(match.substr(1), 16));
-  });
+  })));
+};
 
-  return result;
+const decodeBase64Text = (raw: string): string => {
+  return atob(raw);
 };
 
 const recursiveParse = async (raw: string, target: Email, i: number) => {
@@ -206,13 +247,20 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
       break;
     }
     case EmailContentType.TextPlain: case EmailContentType.TextHTML: {
-      if (resultSection.e_TransferEncoding === EmailTransferEncoding.QuotedPrintable || resultSection.e_TransferEncoding === EmailTransferEncoding.B7bit)
+      if (resultSection.e_TransferEncoding === EmailTransferEncoding.QuotedPrintable || resultSection.e_TransferEncoding === EmailTransferEncoding.B7bit) {
         resultSection.e_Content = decodeQuotedPrintable(body);
-      else resultSection.e_Content = body;
+
+        if (resultSection.e_Type === EmailContentType.TextPlain)
+          resultSection.e_Content = prepareText(resultSection.e_Content);
+      } else if (resultSection.e_TransferEncoding === EmailTransferEncoding.Base64) {
+        resultSection.e_Content = decodeBase64Text(body);
+      } else resultSection.e_Content = body;
       insertSection = true;
       break;
     }
-    case EmailContentType.MultipartAlternative: case EmailContentType.MultipartMixed: {
+    case EmailContentType.MultipartAlternative:
+    case EmailContentType.MultipartRelated:
+    case EmailContentType.MultipartMixed: {
       if (!contentType.boundary)
         throw new Error('Content type is multipart but boundary not specified');
 
@@ -292,6 +340,7 @@ const recursiveParse = async (raw: string, target: Email, i: number) => {
           target.e_SPFVerified = pairs.find(a => a.h_Key === 'spf')?.h_Value;
           target.e_DKIMVerified = pairs.find(a => a.h_Key === 'dkim')?.h_Value;
           target.e_SUVerified = pairs.find(a => a.h_Key == 'su')?.h_Value;
+          target.e_DMARCVerified = pairs.find(a => a.h_Key == 'dmarc')?.h_Value;
           break;
         }
       }

@@ -8,6 +8,7 @@ export enum EmailContentType {
   TextPlain,
   MultipartAlternative,
   MultipartMixed,
+  MultipartRelated,
   ImagePng,
   ImageJpg,
   Unknown,
@@ -22,6 +23,7 @@ export const contentTypeToString = (type: EmailContentType): string => {
     case EmailContentType.ImagePng: return 'image/png';
     case EmailContentType.ImageJpg: return 'image/jpg';
     case EmailContentType.Unknown: return 'application/x-binary';
+    case EmailContentType.MultipartRelated: return 'multipart/related';
   }
 };
 
@@ -29,6 +31,7 @@ export const stringToEmailContentType = (raw: string): EmailContentType => {
   switch (raw) {
     case 'multipart/alternative': return EmailContentType.MultipartAlternative;
     case 'multipart/mixed': return EmailContentType.MultipartMixed;
+    case 'multipart/related': return EmailContentType.MultipartRelated;
     case 'text/html': return EmailContentType.TextHTML;
     case 'text/plain': return EmailContentType.TextPlain;
     case 'image/png': return EmailContentType.ImagePng;
@@ -113,6 +116,8 @@ export class EmailAddress {
         result.push(EmailAddress.parse(addressBuffer));
         addressBuffer = '';
       }
+
+      addressBuffer += c;
     }
 
     if (addressBuffer.length > 0) result.push(EmailAddress.parse(addressBuffer));
@@ -131,6 +136,7 @@ export class Email {
   public e_SPFVerified?: string;
   public e_DKIMVerified?: string;
   public e_SUVerified?: string;
+  public e_DMARCVerified?: string;
 
   public constructor()
   {
